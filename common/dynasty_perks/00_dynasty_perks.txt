@@ -306,6 +306,11 @@ erudition_legacy_1 = { # Vibrant Court
 
 erudition_legacy_2 = { # Ordained Rulership
 	legacy = erudition_legacy_track
+	effect = {
+		custom_description_no_bullet = {
+			text = erudition_legacy_2_effect
+		}
+	}
 
 	character_modifier = {
 		name = erudition_legacy_2_modifier_name

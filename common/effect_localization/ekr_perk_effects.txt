@@ -1,0 +1,5 @@
+erudition_legacy_2_effect = {
+	global = BETTER_ORDAINED_LEGACY
+	first = BETTER_ORDAINED_LEGACY
+	third = BETTER_ORDAINED_LEGACY
+}
