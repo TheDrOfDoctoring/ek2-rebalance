@@ -1,2 +1,5 @@
 ﻿l_english:
 BETTER_ORDAINED_LEGACY:0 "#P 10%#! of [councillors|E]' primary [skills|E] added to your own"
+BETTER_CULTURE_VASSALAGE_LEGACY:0 "[offer_vassalization|E] Acceptance: #P +20#!"
+magicka_legacy_5_name:0 "Aggrandized Magic"
+BETTER_SPELLS_PERK_BONUS:0 "Spells last longer or are more powerful"

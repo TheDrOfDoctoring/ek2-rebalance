@@ -1,6 +1,6 @@
-version="1.8.2"
+version="1.0.0"
 tags={
 	"Balance"
 }
-name="ek2balance"
+name="ek2rebalance"
 supported_version="1.8.2"

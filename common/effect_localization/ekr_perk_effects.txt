@@ -3,3 +3,13 @@ erudition_legacy_2_effect = {
 	first = BETTER_ORDAINED_LEGACY
 	third = BETTER_ORDAINED_LEGACY
 }
+culture_legacy_3_effect = {
+	global = BETTER_CULTURE_VASSALAGE_LEGACY
+	first = BETTER_CULTURE_VASSALAGE_LEGACY
+	third = BETTER_CULTURE_VASSALAGE_LEGACY
+}
+magicka_legacy_5_b_effect = {
+	global = BETTER_SPELLS_PERK_BONUS
+	first = BETTER_SPELLS_PERK_BONUS
+	third = BETTER_SPELLS_PERK_BONUS
+}

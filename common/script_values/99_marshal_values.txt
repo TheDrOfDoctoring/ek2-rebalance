@@ -414,9 +414,11 @@ marshal_ordained_scale = {
 	value = 0
 	if = {
 		limit = {
-			liege = { has_dynasty_perk = erudition_legacy_2 }
+			exists = liege.dynasty
+			liege.dynasty = { has_dynasty_perk = erudition_legacy_2 }
+			house = liege.house
 		}
-		add = stewardship
+		add = martial
 		multiply = {
 			add = 10
 			divide = 100
@@ -463,20 +465,3 @@ marshal_scheme_overtime_boost_max = {
 }
 
 ### Reliable House modifier
-marshal_reliable_house_scale = {
-	value = 0
-	if = {
-		limit = {
-			exists = liege.dynasty
-			liege.dynasty = { has_dynasty_perk = fp2_coterie_legacy_2 }
-			house = liege.house
-		}
-		add = martial
-		multiply = {
-			add = council_reliable_house_percentage
-			divide = 100
-		}
-		floor = yes
-		min = 1
-	}
-}

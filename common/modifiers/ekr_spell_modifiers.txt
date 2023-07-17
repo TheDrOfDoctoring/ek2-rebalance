@@ -1,0 +1,13 @@
+modifier_spell_greater_oblivion_knowledge = {
+	icon = learning_positive
+	monthly_lifestyle_xp_gain_mult = 0.15
+}
+
+modifier_spell_greater_muffled_senses = {
+	icon = magic_negative
+	hostile_scheme_resistance_add = -40
+}
+modifier_spell_greater_resilience_grand = {
+	icon = magic_positive
+	health = 1
+}

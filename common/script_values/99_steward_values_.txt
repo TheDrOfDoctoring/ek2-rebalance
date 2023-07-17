@@ -24,7 +24,9 @@ steward_ordained_scale = {
 	value = 0
 	if = {
 		limit = {
-			liege = { has_dynasty_perk = erudition_legacy_2 }
+			exists = liege.dynasty
+			liege.dynasty = { has_dynasty_perk = erudition_legacy_2 }
+			house = liege.house
 		}
 		add = stewardship
 		multiply = {
@@ -36,24 +38,6 @@ steward_ordained_scale = {
 	}
 }
 
-### Reliable House modifier
-steward_reliable_house_scale = {
-	value = 0
-	if = {
-		limit = {
-			exists = liege.dynasty
-			liege.dynasty = { has_dynasty_perk = fp2_coterie_legacy_2 }
-			house = liege.house
-		}
-		add = stewardship
-		multiply = {
-			add = council_reliable_house_percentage
-			divide = 100
-		}
-		floor = yes
-		min = 1
-	}
-}
 
 
 #########################################

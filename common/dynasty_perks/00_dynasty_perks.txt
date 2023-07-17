@@ -352,7 +352,7 @@ erudition_legacy_4 = { # True Believers
 		domain_tax_same_faith_mult = 0.05
 	}
 	doctrine_character_modifier = {
-		name = erudition_legacy_4_modifier_name
+		name = erudfition_legacy_4_modifier_name
 		doctrine = doctrine_spiritual_head
 		religious_head_opinion = 15
 	}

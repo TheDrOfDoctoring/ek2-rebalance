@@ -1,0 +1,5126 @@
+# add_arcana_skill = { VALUE = x }
+# add_arcana_skill = {
+#     if = {
+#         limit = { NOT = { exists = var:arcana_base } }
+#         #limit = { NOT = { has_variable = arcana_base } }
+#         set_variable = { name = arcana_base value = 0 }
+#     }
+#     custom_description = {
+#         text = add_arcana_skill
+#         value = $VALUE$
+#         change_variable = { name = arcana_base add = $VALUE$ }
+#     }
+#     if = {
+#         limit = { var:arcana_base < 0 }
+#         set_variable = { name = arcana_base value = 0 }
+#     }
+# }
+add_arcana_skill = {
+    save_temporary_scope_value_as = {
+        name = tmp_skill_value
+        value = $VALUE$
+    }
+    custom_description = {
+        text = add_arcana_skill
+        value = scope:tmp_skill_value
+        if = {
+            #limit = { NOT = { exists = var:arcana_base } }
+            limit = { NOT = { has_variable = arcana_base } }
+            set_variable = { name = arcana_base value = scope:tmp_skill_value }
+            if = { #this is nested to stop the error log having an aneurism if the variable doesn't exist
+                limit = { scope:tmp_skill_value < 0 }
+                set_variable = { name = arcana_base value = 0 }
+            }
+        }
+        else = {
+            change_variable = { name = arcana_base add = scope:tmp_skill_value }
+            if = {
+                limit = { var:arcana_base < 0 }
+                set_variable = { name = arcana_base value = 0 }
+            }
+        }
+    }
+}
+# add_magicka = {
+#     if = {
+#         limit = { NOT = { exists = var:magicka } }
+#         #limit = { NOT = { has_variable = magicka } }
+#         set_variable = { name = magicka value = 0 }
+#     }
+#     custom_description = {
+#         text = add_magicka
+#         value = $VALUE$
+#         change_variable = { name = magicka add = $VALUE$ }
+#     }
+#     if = {
+#         limit = { var:magicka > magicka_max }
+#         set_variable = { name = magicka value = magicka_max }
+#     }
+# }
+add_magicka = {
+    custom_description = {
+        text = add_magicka
+        value = $VALUE$
+        if = {            
+            limit = { NOT = { has_variable = magicka } }
+            if = {
+                limit = { NOT = { $VALUE$ = 0 } }
+                set_variable = { name = magicka value = $VALUE$ }
+                if = {
+                    limit = { $VALUE$ > magicka_max }
+                    set_variable = { name = magicka value = magicka_max }
+                }
+            }
+        }
+        else = {
+            change_variable = { name = magicka add = $VALUE$ }
+            if = {
+                limit = { var:magicka > magicka_max }
+                set_variable = { name = magicka value = magicka_max }
+            }
+        }
+    }
+}
+add_quarterly_magicka_effect = {
+    trigger_event = {
+        on_action = add_monthly_magicka
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 1
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 2
+    }
+}
+
+add_monthly_magicka_pulse = {
+        trigger_event = {
+        on_action = add_monthly_magicka
+    }
+}
+
+add_monthly_magicka_effect = {
+    if = {
+        limit = { can_magic_trigger = yes }
+        add_magicka = { VALUE = magicka_monthly }
+    }
+}
+
+add_yearly_magicka_effect = { 
+    trigger_event = {
+        on_action = add_monthly_magicka
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 1
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 2
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 3
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 4
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 5
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 6
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 7
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 8
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 9
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 10
+    }
+    trigger_event = {
+        on_action = add_monthly_magicka
+        months = 11
+    }
+}
+
+# spell_caster_effect = {
+#     if = { #actual effect here
+#         limit = { has_variable = spell_cast_enabled }
+#         #add_magicka = { VALUE = -10 }
+#         #add_magicka = { VALUE = spell_$SPELL$_cost }
+#         var:spell_caster = { spell_$SPELL$_caster_effect = yes }
+#         var:spell_recipient = { spell_$SPELL$_castee_effect = yes }
+#         if = {
+#             limit = { var:spell_province = { has_variable = $SCHOOL$_province } }
+#             var:spell_recipient = { spell_$SPELL$_province_effect = yes }
+#         }
+#     }
+#     else = {
+#         hidden_effect = { #move to recipient and have is_valid and execute check for not variable clear on cast
+#             set_variable = { name = spell_selected value = flag:$SPELL$ }
+#             spell_reset_recipient = yes
+#         }
+#         custom_label = spell_name_caster
+#         show_as_tooltip = { #effect here is for tooltip
+#             spell_$SPELL$_caster_effect = yes
+#         }
+#     }
+# }
+# spell_castee_effect = {
+#     custom_label = spell_name_castee
+#     spell_$SPELL$_castee_effect = yes
+# }
+# spell_province_effect = {
+#     #custom_label = spell_name_castee
+#     spell_$SPELL$_province_effect = yes
+# }
+spell_reset_recipient = {
+    if = {
+        limit = { has_variable = spell_recipient_old }
+        set_variable = { name = spell_recipient value = var:spell_recipient_old }
+        remove_variable = spell_recipient_old
+    }
+}
+
+spell_get_skill_attribute = {
+    clear_variable_list = spell_skill_attribute
+    if = {
+        limit = {
+            OR = {
+                scope:spell = flag:absorb_skill
+            }
+        }
+        add_to_variable_list = { name = spell_skill_attribute target = flag:_diplomacy }
+        add_to_variable_list = { name = spell_skill_attribute target = flag:_martial }
+        add_to_variable_list = { name = spell_skill_attribute target = flag:_stewardship }
+        add_to_variable_list = { name = spell_skill_attribute target = flag:_intrigue }
+        add_to_variable_list = { name = spell_skill_attribute target = flag:_learning }
+        add_to_variable_list = { name = spell_skill_attribute target = flag:_prowess }
+        set_variable = { name = spell_selected_skill_attribute value = flag:_diplomacy }
+    }
+}
+
+spell_get_size = {
+    clear_variable_list = spell_size
+    if = {
+        limit = {
+            OR = {
+                scope:spell = flag:raise_dead
+                scope:spell = flag:summon_atronach
+                scope:spell = flag:daedric_army
+                scope:spell = flag:transmute
+                scope:spell = flag:leech_health
+                scope:spell = flag:fortify_walls
+                scope:spell = flag:exasperate
+                scope:spell = flag:calm
+                scope:spell = flag:resilience  
+                scope:spell = flag:charm  
+                scope:spell = flag:destroy_walls
+            }
+        }
+        add_to_variable_list = { name = spell_size target = flag:_petty }
+        add_to_variable_list = { name = spell_size target = flag:_lesser }
+        add_to_variable_list = { name = spell_size target = flag:_common }
+        add_to_variable_list = { name = spell_size target = flag:_greater }
+        add_to_variable_list = { name = spell_size target = flag:_grand }
+        set_variable = { name = spell_selected_size value = flag:_petty }
+    }
+}
+
+spell_cleanup = {
+    remove_variable = spell_selected
+    remove_variable = spell_recipient
+    remove_variable = spell_recipient_old
+    remove_variable = spell_caster
+    remove_variable = spell_cast_enabled
+    remove_variable = spell_school
+    clear_variable_list = spell_list
+    remove_variable = spell_county
+    clear_variable_list = spell_counties
+    clear_variable_list = spell_skill_attribute
+    remove_variable = spell_selected_skill_attribute
+    clear_variable_list = spell_size
+    remove_variable = spell_selected_size
+}
+
+# Alteration
+# spell_wards_castee_effect = {
+#     add_arcana_skill = { VALUE = 4 }
+# }
+spell_wards_province_effect = {
+    add_county_modifier = invested_in_province_modifier
+}
+
+spell_transmute_castee_effect = {
+    switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = { 
+            add_gold = 20
+        }
+        flag:_lesser = { 
+            add_gold = 40
+        }
+        flag:_common = { 
+            add_gold = 60
+        }
+        flag:_greater = { 
+            add_gold = 80
+        }
+        flag:_grand = {
+            random_list = {
+                90 = { add_gold = 100 }
+                10 = { 
+                    trigger = { 
+                        NOT = { var:spell_caster = ROOT }
+                        var:spell_caster = {
+                            has_trait = greedy
+                            NOT = { has_trait = honest }
+                        }
+                    }
+                    modifier = {
+                        var:spell_caster = {
+                            has_trait = deceitful
+                        }
+                        add = 10
+                    }
+                    modifier = {
+                        var:spell_caster = {
+                            has_trait = loyal
+                        }
+                        add = -5
+                    }
+                    modifier = {
+                        var:spell_caster = {
+                            has_trait = disloyal
+                        }
+                        add = 5
+                    }
+                    trigger_event = ek_ymis_events.0050
+                }
+            }
+        }
+    }
+}
+spell_greater_transmute_castee_effect = {
+    switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = { 
+            add_gold = 40
+        }
+        flag:_lesser = { 
+            add_gold = 70
+        }
+        flag:_common = { 
+            add_gold = 100
+        }
+        flag:_greater = { 
+            add_gold = 130
+        }
+        flag:_grand = {
+            random_list = {
+                90 = { add_gold = 175 }
+                10 = { 
+                    trigger = { 
+                        NOT = { var:spell_caster = ROOT }
+                        var:spell_caster = {
+                            has_trait = greedy
+                            NOT = { has_trait = honest }
+                        }
+                    }
+                    modifier = {
+                        var:spell_caster = {
+                            has_trait = deceitful
+                        }
+                        add = 10
+                    }
+                    modifier = {
+                        var:spell_caster = {
+                            has_trait = loyal
+                        }
+                        add = -5
+                    }
+                    modifier = {
+                        var:spell_caster = {
+                            has_trait = disloyal
+                        }
+                        add = 5
+                    }
+                    trigger_event = ek_ymis_events.0050
+                }
+            }
+        }
+    }
+}
+spell_transmute_province_effect = {} #left empty because transmute_province = 0 in ek_arcana_values.txt
+
+spell_burden_castee_effect = {
+    
+        if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 5
+            }
+        }
+        send_interface_toast = {
+            type = event_toast_effect_bad
+            title = target_of_hostile_spell_notification
+            left_icon = ROOT
+            add_character_modifier = {
+                modifier = modifier_spell_burden
+                years = 5
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+spell_greater_burden_castee_effect = {
+    
+    if = {
+    limit = { NOT = { has_character_flag = spell_already_afflicted } }
+    hidden_effect = {
+        add_character_flag = {
+            flag = spell_already_afflicted
+            years = 5
+        }
+    }
+    send_interface_toast = {
+        type = event_toast_effect_bad
+        title = target_of_hostile_spell_notification
+        left_icon = ROOT
+        add_character_modifier = {
+            modifier = modifier_spell_burden
+            years = 15
+        }
+    }
+}
+else = {
+    ROOT = {
+        custom_tooltip = spell_already_afflicted_desc
+        hidden_effect = {
+            send_interface_toast = {
+                title = spell_failed
+                left_icon = root
+                custom_tooltip = spell_already_afflicted
+            }
+        }
+    }
+}
+}
+spell_burden_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_fortify_walls_province_effect = {
+    switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_fortify_walls_petty
+                years = 5
+            }
+        }
+        flag:_lesser = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_fortify_walls_lesser
+                years = 5
+            }
+        }
+        flag:_common = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_fortify_walls_common
+                years = 5
+            }
+        }
+        flag:_greater = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_fortify_walls_greater
+                years = 5
+            }
+        }
+        flag:_grand = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_fortify_walls_grand
+                years = 5
+            }
+        }
+    }
+}
+spell_greater_fortify_walls_province_effect = {
+    switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_fortify_walls_petty
+                years = 10
+            }
+        }
+        flag:_lesser = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_fortify_walls_lesser
+                years = 10
+            }
+        }
+        flag:_common = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_fortify_walls_common
+                years = 10
+            }
+        }
+        flag:_greater = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_fortify_walls_greater
+                years = 10
+            }
+        }
+        flag:_grand = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_fortify_walls_grand
+                years = 10
+            }
+        }
+    }
+}
+
+spell_fortify_walls_castee_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_dispel_castee_effect = {
+    custom_tooltip = spell_dispel_desc
+    if = {
+        limit = { 
+            has_character_modifier = modifier_spell_absorb_diplomacy_neg 
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_absorb_diplomacy_neg
+        }
+    }
+    if = {
+        limit = { 
+            has_character_modifier = modifier_spell_absorb_martial_neg 
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_absorb_martial_neg
+        }
+    }
+    if = {
+        limit = { 
+            has_character_modifier = modifier_spell_absorb_stewardship_neg 
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_absorb_stewardship_neg
+        }
+    }
+    if = {
+        limit = { 
+            has_character_modifier = modifier_spell_absorb_intrigue_neg
+        } 
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_absorb_intrigue_neg
+        }
+    }
+    if = {
+        limit = { 
+            has_character_modifier = modifier_spell_absorb_learning_neg
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_absorb_learning_neg
+        }
+    }
+    if = {
+        limit = { 
+            has_character_modifier = modifier_spell_absorb_prowess_neg
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_absorb_prowess_neg
+        }
+    }
+    if = {
+        limit = { 
+            has_character_modifier = modifier_spell_burden
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_burden
+        }
+    }
+    if = {
+        limit = { 
+            has_character_modifier = modifier_spell_destroy_health
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_destroy_health
+        }
+    }
+    if = {
+        limit = { 
+            has_character_modifier = modifier_spell_aggravate_vulnerability
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_aggravate_vulnerability
+        }
+    }
+    if = {
+        limit = { 
+            has_character_modifier = modifier_spell_muffled_senses
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_muffled_senses
+        }
+    }
+    if = {
+        limit = {
+            has_character_modifier = modifier_spell_leech_health_negative_petty 
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_leech_health_negative_petty 
+        }
+    }
+    if = {
+        limit = {
+            has_character_modifier = modifier_spell_leech_health_negative_lesser
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_leech_health_negative_lesser
+        }
+    }
+    if = {
+        limit = {
+            has_character_modifier = modifier_spell_leech_health_negative_common
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_leech_health_negative_common
+        }
+    }
+    if = {
+        limit = {
+            has_character_modifier = modifier_spell_leech_health_negative_greater
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_leech_health_negative_greater
+        }
+    }
+    if = {
+        limit = {
+            has_character_modifier = modifier_spell_leech_health_negative_grand
+        }
+        send_interface_toast = {
+            title = removed_hostile_spell_modifier_notification
+			right_icon = root
+            remove_character_modifier = modifier_spell_leech_health_negative_grand
+        }
+    }
+}
+
+spell_dispel_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_absorb_skill_castee_effect = {
+        if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 5
+            }
+        }
+        switch = {
+            trigger = ROOT.var:spell_selected_skill_attribute
+            flag:_diplomacy = { 
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_character_modifier = { modifier = modifier_spell_absorb_diplomacy_neg years = 5 }
+                }                
+                Root = { add_character_modifier = { modifier = modifier_spell_absorb_diplomacy_pos years = 5 } }
+            }
+            flag:_martial = { 
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_character_modifier = { modifier = modifier_spell_absorb_martial_neg years = 5 }
+                }  
+                Root = { add_character_modifier = { modifier = modifier_spell_absorb_martial_pos years = 5 } }
+            }
+            flag:_stewardship = { 
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_character_modifier = { modifier = modifier_spell_absorb_stewardship_neg years = 5 }
+                } 
+                Root = { add_character_modifier = { modifier = modifier_spell_absorb_stewardship_pos years = 5 } }
+            }
+            flag:_intrigue = { 
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_character_modifier = { modifier = modifier_spell_absorb_intrigue_neg years = 5 }
+                }  
+                Root = { add_character_modifier = { modifier = modifier_spell_absorb_intrigue_pos years = 5 } }
+            }
+            flag:_learning = { 
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_character_modifier = { modifier = modifier_spell_absorb_learning_neg years = 5 }
+                }  
+                Root = { add_character_modifier = { modifier = modifier_spell_absorb_learning_pos years = 5 } }
+            }
+            flag:_prowess = { 
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_character_modifier = { modifier = modifier_spell_absorb_prowess_neg years = 5 }
+                }  
+                Root = { add_character_modifier = { modifier = modifier_spell_absorb_prowess_pos years = 5 } }
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+spell_greater_absorb_skill_castee_effect = {
+    if = {
+    limit = { NOT = { has_character_flag = spell_already_afflicted } }
+    hidden_effect = {
+        add_character_flag = {
+            flag = spell_already_afflicted
+            years = 10
+        }
+    }
+    switch = {
+        trigger = ROOT.var:spell_selected_skill_attribute
+        flag:_diplomacy = { 
+            send_interface_toast = {
+                type = event_toast_effect_bad
+                title = target_of_hostile_spell_notification
+                left_icon = ROOT
+                add_character_modifier = { modifier = modifier_spell_absorb_diplomacy_neg years = 10 }
+            }                
+            Root = { add_character_modifier = { modifier = modifier_spell_absorb_diplomacy_pos years = 10 } }
+        }
+        flag:_martial = { 
+            send_interface_toast = {
+                type = event_toast_effect_bad
+                title = target_of_hostile_spell_notification
+                left_icon = ROOT
+                add_character_modifier = { modifier = modifier_spell_absorb_martial_neg years = 10 }
+            }  
+            Root = { add_character_modifier = { modifier = modifier_spell_absorb_martial_pos years = 10 } }
+        }
+        flag:_stewardship = { 
+            send_interface_toast = {
+                type = event_toast_effect_bad
+                title = target_of_hostile_spell_notification
+                left_icon = ROOT
+                add_character_modifier = { modifier = modifier_spell_absorb_stewardship_neg years = 10}
+            } 
+            Root = { add_character_modifier = { modifier = modifier_spell_absorb_stewardship_pos years = 10 } }
+        }
+        flag:_intrigue = { 
+            send_interface_toast = {
+                type = event_toast_effect_bad
+                title = target_of_hostile_spell_notification
+                left_icon = ROOT
+                add_character_modifier = { modifier = modifier_spell_absorb_intrigue_neg years = 10 }
+            }  
+            Root = { add_character_modifier = { modifier = modifier_spell_absorb_intrigue_pos years = 10 } }
+        }
+        flag:_learning = { 
+            send_interface_toast = {
+                type = event_toast_effect_bad
+                title = target_of_hostile_spell_notification
+                left_icon = ROOT
+                add_character_modifier = { modifier = modifier_spell_absorb_learning_neg years = 10 }
+            }  
+            Root = { add_character_modifier = { modifier = modifier_spell_absorb_learning_pos years = 10 } }
+        }
+        flag:_prowess = { 
+            send_interface_toast = {
+                type = event_toast_effect_bad
+                title = target_of_hostile_spell_notification
+                left_icon = ROOT
+                add_character_modifier = { modifier = modifier_spell_absorb_prowess_neg years = 10 }
+            }  
+            Root = { add_character_modifier = { modifier = modifier_spell_absorb_prowess_pos years = 10 } }
+        }
+    }
+}
+else = {
+    ROOT = {
+        custom_tooltip = spell_already_afflicted_desc
+        hidden_effect = {
+            send_interface_toast = {
+                title = spell_failed
+                left_icon = root
+                custom_tooltip = spell_already_afflicted
+            }
+        }
+    }
+}
+}
+spell_absorb_skill_province_effect = {} #left empty on purpose to avoid throwing errors
+
+# Conjuration
+spell_oblivion_knowledge_castee_effect = {
+    add_character_modifier = {
+        modifier = modifier_spell_oblivion_knowledge
+        years = 5
+    }
+}
+spell_greater_oblivion_knowledge_castee_effect = {
+    add_character_modifier = {
+        modifier = modifier_spell_greater_oblivion_knowledge
+        years = 5
+    }
+}
+
+
+spell_oblivion_knowledge_province_effect = {} #left empty on purpose to avoid throwing errors
+spell_greater_oblivion_knowledge_province_effect = {}
+spell_banish_daedra_castee_effect = {
+    custom_tooltip = spell_banish_daedra_desc
+    if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 5
+            }
+            random_list = {
+                10 = {
+                    trigger = { culture = { has_cultural_pillar = heritage_dremora } }
+                    modifier = {
+                        add = {
+                            value = arcana
+                            multiply = 0.1
+                        }
+                    }
+                    death = {
+                        death_reason = death_banished
+                        killer = ROOT
+                    }
+                }
+                10 = {
+                    ROOT = {
+                        send_interface_toast = {
+                            title = spell_failed
+                            left_icon = root
+                            custom_tooltip = spell_banish_daedra_failed
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_banish_daedra_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_banish_daedra_castee_effect = {
+    custom_tooltip = spell_banish_daedra_desc
+    if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 10
+            }
+            random_list = {
+                25 = {
+                    trigger = { culture = { has_cultural_pillar = heritage_dremora } }
+                    modifier = {
+                        add = {
+                            value = arcana
+                            multiply = 0.1
+                        }
+                    }
+                    death = {
+                        death_reason = death_banished
+                        killer = ROOT
+                    }
+                }
+                10 = {
+                    ROOT = {
+                        send_interface_toast = {
+                            title = spell_failed
+                            left_icon = root
+                            custom_tooltip = spell_banish_daedra_failed
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_greater_banish_daedra_province_effect = {}
+
+spell_summon_atronach_castee_effect = {
+    conjuration_remove_atronach = yes
+    switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = { 
+            add_character_modifier = {
+                modifier = modifier_spell_summon_stone_atronach
+                years = 5
+            }
+        }
+        flag:_lesser = { 
+            add_character_modifier = {
+                modifier = modifier_spell_summon_flame_atronach
+                years = 5
+            }
+        }
+        flag:_common = { 
+            add_character_modifier = {
+                modifier = modifier_spell_summon_frost_atronach
+                years = 5
+            }
+        }
+        flag:_greater = { 
+            add_character_modifier = {
+                modifier = modifier_spell_summon_storm_atronach
+                years = 5
+            }
+        }
+        flag:_grand = { 
+            add_character_modifier = {
+                modifier = modifier_spell_summon_air_atronach
+                years = 5
+            }
+        }
+    }   
+}
+
+spell_greater_summon_atronach_castee_effect = {
+    conjuration_remove_atronach = yes
+    switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = { 
+            add_character_modifier = {
+                modifier = modifier_spell_summon_stone_atronach
+                years = 10
+            }
+        }
+        flag:_lesser = { 
+            add_character_modifier = {
+                modifier = modifier_spell_summon_flame_atronach
+                years = 10
+            }
+        }
+        flag:_common = { 
+            add_character_modifier = {
+                modifier = modifier_spell_summon_frost_atronach
+                years = 10
+            }
+        }
+        flag:_greater = { 
+            add_character_modifier = {
+                modifier = modifier_spell_summon_storm_atronach
+                years = 10
+            }
+        }
+        flag:_grand = { 
+            add_character_modifier = {
+                modifier = modifier_spell_summon_air_atronach
+                years = 10
+            }
+        }
+    }   
+}
+spell_summon_atronach_province_effect = {} #left empty on purpose to avoid throwing errors
+spell_greater_summon_atronach_province_effect = {} 
+spell_summon_dremora_castee_effect = {
+    custom_tooltip = spell_summon_dremora_desc
+    hidden_effect = {
+        if = {
+			limit = {
+				any_courtier = {
+					has_character_flag = summoned_daedra
+				}
+			}
+			every_courtier = {
+				limit = {
+					has_character_flag = summoned_daedra
+				}
+				silent_disappearance_effect = yes
+			}
+		}
+        random_list = {
+            10 = {
+                create_character = {
+                    template = dremora_boethiah_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_malacath_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_mehrunes_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_molag_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_namira_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_peryite_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_sanguine_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_vaermina_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            1 = {
+                create_character = {
+                    template = haskill_template
+                    location = prev.capital_province
+                    save_scope_as = summoned_dremora
+                }
+            }
+        }
+        scope:summoned_dremora = {
+            add_character_flag = summoned_daedra
+            add_opinion = {
+				target = prev
+				modifier = thrall_opinion
+			}
+        }
+        add_hook = {
+            type = loyalty_hook
+            target = scope:summoned_dremora
+        }
+        add_courtier = scope:summoned_dremora
+        trigger_event = {
+            on_action = summon_timer
+            years = 5
+        }
+    }
+}
+
+spell_summon_dremora_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_summon_dremora_castee_effect = {
+    custom_tooltip = spell_summon_dremora_desc
+    hidden_effect = {
+        if = {
+			limit = {
+				any_courtier = {
+					has_character_flag = summoned_daedra
+				}
+			}
+			every_courtier = {
+				limit = {
+					has_character_flag = summoned_daedra
+				}
+				silent_disappearance_effect = yes
+			}
+		}
+        random_list = {
+            10 = {
+                create_character = {
+                    template = dremora_boethiah_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_malacath_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_mehrunes_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_molag_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_namira_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_peryite_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_sanguine_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            10 = {
+                create_character = {
+                    template = dremora_vaermina_template
+                    location = prev.capital_province
+                    gender_female_chance = 50
+                    save_scope_as = summoned_dremora
+                }
+            }
+            1 = {
+                create_character = {
+                    template = haskill_template
+                    location = prev.capital_province
+                    save_scope_as = summoned_dremora
+                }
+            }
+        }
+        scope:summoned_dremora = {
+            add_character_flag = summoned_daedra
+            add_opinion = {
+				target = prev
+				modifier = thrall_opinion
+			}
+        }
+        add_hook = {
+            type = loyalty_hook
+            target = scope:summoned_dremora
+        }
+        add_courtier = scope:summoned_dremora
+        trigger_event = {
+            on_action = summon_timer
+            years = 10
+        }
+    }
+}
+
+spell_greater_summon_dremora_province_effect = {}
+
+spell_daedric_army_castee_effect = {
+    custom_tooltip = spell_daedric_army_desc 
+    switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = { 
+            spawn_army = {
+                men_at_arms = {
+                    type = daedra
+                    stacks = 1
+                }
+                location = this.capital_province
+                inheritable = no
+                uses_supply = no
+                name = "daedra"
+                war = root.war
+            }
+        }
+        flag:_lesser = { 
+            spawn_army = {
+                men_at_arms = {
+                    type = daedra
+                    stacks = 2
+                }
+                location = this.capital_province
+                inheritable = no
+                uses_supply = no
+                name = "daedra"
+                war = root.war
+            }
+        }
+        flag:_common = { 
+            spawn_army = {
+                men_at_arms = {
+                    type = daedra
+                    stacks = 3
+                }
+                location = this.capital_province
+                inheritable = no
+                uses_supply = no
+                name = "daedra"
+                war = root.war
+            }
+        }
+        flag:_greater = { 
+            spawn_army = {
+                men_at_arms = {
+                    type = daedra
+                    stacks = 4
+                }
+                location = this.capital_province
+                inheritable = no
+                uses_supply = no
+                name = "daedra"
+                war = root.war
+            }
+        }
+        flag:_grand = { 
+            spawn_army = {
+                men_at_arms = {
+                    type = daedra
+                    stacks = 5
+                }
+                location = this.capital_province
+                inheritable = no
+                uses_supply = no
+                name = "daedra"
+                war = root.war
+            }
+        }
+    }
+}
+
+spell_daedric_army_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_daedric_army_castee_effect = {
+    custom_tooltip = spell_daedric_army_desc 
+    switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = { 
+            spawn_army = {
+                men_at_arms = {
+                    type = daedra
+                    stacks = 2
+                }
+                location = this.capital_province
+                inheritable = no
+                uses_supply = no
+                name = "daedra"
+                war = root.war
+            }
+        }
+        flag:_lesser = { 
+            spawn_army = {
+                men_at_arms = {
+                    type = daedra
+                    stacks = 3
+                }
+                location = this.capital_province
+                inheritable = no
+                uses_supply = no
+                name = "daedra"
+                war = root.war
+            }
+        }
+        flag:_common = { 
+            spawn_army = {
+                men_at_arms = {
+                    type = daedra
+                    stacks = 4
+                }
+                location = this.capital_province
+                inheritable = no
+                uses_supply = no
+                name = "daedra"
+                war = root.war
+            }
+        }
+        flag:_greater = { 
+            spawn_army = {
+                men_at_arms = {
+                    type = daedra
+                    stacks = 7
+                }
+                location = this.capital_province
+                inheritable = no
+                uses_supply = no
+                name = "daedra"
+                war = root.war
+            }
+        }
+        flag:_grand = { 
+            spawn_army = {
+                men_at_arms = {
+                    type = daedra
+                    stacks = 10
+                }
+                location = this.capital_province
+                inheritable = no
+                uses_supply = no
+                name = "daedra"
+                war = root.war
+            }
+        }
+    }
+}
+
+spell_greater_daedric_army_province_effect = {}
+
+# Destruction
+spell_detract_magicka_castee_effect = {
+    if = {
+        limit = { 
+            NOR = { 
+                has_character_flag = spell_already_afflicted
+                can_magic_trigger = no 
+            }
+        }
+        if = {
+            limit = { has_magicka_less_than = { VALUE = 100 } }            
+            add_magicka = { VALUE = var:magicka.negate }
+        }
+        else = {                                        
+            add_magicka = { VALUE = -100 }
+        }    
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 5
+            }
+        }
+    }
+    else_if = {
+        limit = {
+            can_magic_trigger = no
+            NOT = { has_character_flag = spell_already_afflicted }
+        }
+        custom_tooltip = spell_target_no_mage_desc
+        hidden_effect = {
+            send_interface_toast = {
+                title = spell_failed
+                left_icon = root
+                custom_tooltip = spell_target_no_mage
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_detract_magicka_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_detract_magicka_castee_effect = {
+    if = {
+        limit = { 
+            NOR = { 
+                has_character_flag = spell_already_afflicted
+                can_magic_trigger = no 
+            }
+        }
+        if = {
+            limit = { has_magicka_less_than = { VALUE = 100 } }            
+            add_magicka = { VALUE = var:magicka.negate }
+        }
+        else = {                                        
+            add_magicka = { VALUE = -150 }
+        }    
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 8
+            }
+        }
+    }
+    else_if = {
+        limit = {
+            can_magic_trigger = no
+            NOT = { has_character_flag = spell_already_afflicted }
+        }
+        custom_tooltip = spell_target_no_mage_desc
+        hidden_effect = {
+            send_interface_toast = {
+                title = spell_failed
+                left_icon = root
+                custom_tooltip = spell_target_no_mage
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_greater_detract_magicka_province_effect = {}
+
+spell_destroy_walls_province_effect = {
+switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_destroy_walls_petty
+                years = 10
+            }
+        }
+        flag:_lesser = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_destroy_walls_lesser
+                years = 10
+            }
+        }
+        flag:_common = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_destroy_walls_common
+                years = 10
+            }
+        }
+        flag:_greater = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_destroy_walls_greater
+                years = 10
+            }
+        }
+        flag:_grand = { 
+            add_county_modifier = { 
+                modifier = modifier_spell_destroy_walls_grand
+                years = 10
+            }
+        }
+    }
+}
+    
+spell_destroy_walls_castee_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_destroy_walls_province_effect = {
+    switch = {
+            trigger = ROOT.var:spell_selected_size
+            flag:_petty = { 
+                add_county_modifier = { 
+                    modifier = modifier_spell_destroy_walls_petty
+                    years = 15
+                }
+            }
+            flag:_lesser = { 
+                add_county_modifier = { 
+                    modifier = modifier_spell_destroy_walls_lesser
+                    years = 15
+                }
+            }
+            flag:_common = { 
+                add_county_modifier = { 
+                    modifier = modifier_spell_destroy_walls_common
+                    years = 15
+                }
+            }
+            flag:_greater = { 
+                add_county_modifier = { 
+                    modifier = modifier_spell_destroy_walls_greater
+                    years = 15
+                }
+            }
+            flag:_grand = { 
+                add_county_modifier = { 
+                    modifier = modifier_spell_destroy_walls_grand
+                    years = 15
+                }
+            }
+        }
+    }
+        
+    spell_greater_destroy_walls_castee_effect = {}
+
+spell_increase_wounds_castee_effect = {
+    custom_tooltip = spell_increase_wounds_desc
+    if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 5
+            }
+            random_list = {
+                10 = { increase_wounds_no_death_effect = { REASON = fire_magic }  }
+                10 = { increase_wounds_no_death_effect = { REASON = ice_magic }  }
+                10 = { increase_wounds_no_death_effect = { REASON = electricity_magic }  }
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_increase_wounds_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_increase_wounds_castee_effect = {
+    custom_tooltip = spell_increase_wounds_desc
+    if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 10
+            }
+            random_list = {
+                10 = { increase_wounds_no_death_effect = { REASON = fire_magic }  }
+                10 = { increase_wounds_no_death_effect = { REASON = ice_magic }  }
+                10 = { increase_wounds_no_death_effect = { REASON = electricity_magic }  }
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_greater_increase_wounds_province_effect = {}
+
+spell_aggravate_vulnerability_castee_effect = {
+    if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 5
+            }
+        }
+        add_character_modifier = {
+            modifier = modifier_spell_aggravate_vulnerability
+            years = 5
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_aggravate_vulnerability_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_aggravate_vulnerability_castee_effect = {
+    if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 10
+            }
+        }
+        add_character_modifier = {
+            modifier = modifier_spell_aggravate_vulnerability
+            years = 10
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_greater_aggravate_vulnerability_province_effect = {} 
+
+
+spell_destroy_health_castee_effect = {
+    if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 5
+            }
+        }
+        add_character_modifier = {
+            modifier = modifier_spell_destroy_health
+            years = 5
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_destroy_health_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_destroy_health_castee_effect = {
+    if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 10
+            }
+        }
+        add_character_modifier = {
+            modifier = modifier_spell_destroy_health
+            years = 10
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_greater_destroy_health_province_effect = {} 
+
+# Illusion
+spell_muffled_senses_castee_effect = {
+    if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 5
+            }
+        }
+        send_interface_toast = {
+            type = event_toast_effect_bad
+            title = target_of_hostile_spell_notification
+            left_icon = ROOT
+            add_character_modifier = {
+                modifier = modifier_spell_muffled_senses
+                years = 5
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_muffled_senses_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_muffled_senses_castee_effect = {
+    if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 5
+            }
+        }
+        send_interface_toast = {
+            type = event_toast_effect_bad
+            title = target_of_hostile_spell_notification
+            left_icon = ROOT
+            add_character_modifier = {
+                modifier = modifier_greater_spell_muffled_senses
+                years = 5
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_greater_muffled_senses_province_effect = {}   
+
+spell_charm_castee_effect = {
+    switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = {
+            add_character_modifier = {
+                modifier = modifier_spell_charm_petty
+                years = 5
+            }
+        }
+        flag:_lesser = {
+            add_character_modifier = {
+                modifier = modifier_spell_charm_lesser
+                years = 5
+            }
+        }
+        flag:_common = {
+            add_character_modifier = {
+                modifier = modifier_spell_charm_common
+                years = 5
+            }
+        }
+        flag:_greater = {
+            add_character_modifier = {
+                modifier = modifier_spell_charm_greater
+                years = 5
+            }
+        }
+        flag:_grand = { 
+            add_character_modifier = {
+                modifier = modifier_spell_charm_grand
+                years = 5
+            }
+        }
+    }
+}
+
+spell_charm_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_charm_castee_effect = {
+    switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = {
+            add_character_modifier = {
+                modifier = modifier_spell_charm_petty
+                years = 10
+            }
+        }
+        flag:_lesser = {
+            add_character_modifier = {
+                modifier = modifier_spell_charm_lesser
+                years = 10
+            }
+        }
+        flag:_common = {
+            add_character_modifier = {
+                modifier = modifier_spell_charm_common
+                years = 10
+            }
+        }
+        flag:_greater = {
+            add_character_modifier = {
+                modifier = modifier_spell_charm_greater
+                years = 10
+            }
+        }
+        flag:_grand = { 
+            add_character_modifier = {
+                modifier = modifier_spell_charm_grand
+                years = 10
+            }
+        }
+    }
+}
+
+spell_greater_charm_province_effect = {}
+
+spell_calm_castee_effect = {
+     switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = { 
+            add_stress = -20  
+        }
+        flag:_lesser = { 
+            add_stress = -40 
+        }            
+        flag:_common = { 
+            add_stress = -60  
+        }
+        flag:_greater = { 
+            add_stress = -80 
+        }            
+        flag:_grand = { 
+            add_stress = -100 
+        }
+    }    
+}
+
+spell_calm_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_calm_castee_effect = {
+    switch = {
+       trigger = ROOT.var:spell_selected_size
+       flag:_petty = { 
+           add_stress = -35
+       }
+       flag:_lesser = { 
+           add_stress = -55 
+       }            
+       flag:_common = { 
+           add_stress = -75  
+       }
+       flag:_greater = { 
+           add_stress = -100 
+       }            
+       flag:_grand = { 
+           add_stress = -140 
+       }
+   }    
+}
+
+spell_greater_calm_province_effect = {}
+
+spell_exasperate_castee_effect = {
+    if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 5
+            }
+        }
+        switch = {
+            trigger = ROOT.var:spell_selected_size
+            flag:_petty = {
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_stress = 20
+                }
+            }
+            flag:_lesser = {
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_stress = 40
+                }
+            }
+            flag:_common = {
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_stress = 60
+                }
+            }
+            flag:_greater = {
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_stress = 80
+                }
+            } 
+            flag:_grand = {
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_stress = 100
+                }
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_exasperate_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_exasperate_castee_effect = {
+    if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 5
+            }
+        }
+        switch = {
+            trigger = ROOT.var:spell_selected_size
+            flag:_petty = {
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_stress = 40
+                }
+            }
+            flag:_lesser = {
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_stress = 60
+                }
+            }
+            flag:_common = {
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_stress = 100
+                }
+            }
+            flag:_greater = {
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_stress = 140
+                }
+            } 
+            flag:_grand = {
+                send_interface_toast = {
+                    type = event_toast_effect_bad
+                    title = target_of_hostile_spell_notification
+                    left_icon = ROOT
+                    add_stress = 170
+                }
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_greater_exasperate_province_effect = {} 
+
+spell_hysteria_province_effect = {
+    add_county_modifier = { 
+        modifier = modifier_spell_hysteria
+        years = 5
+    }
+}
+spell_hysteria_castee_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_hysteria_province_effect = {
+    add_county_modifier = { 
+        modifier = modifier_spell_hysteria
+        years = 10
+    }
+}
+spell_greater_hysteria_castee_effect = {}
+
+# Restoration
+spell_resilience_castee_effect = {
+    switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = { 
+            add_character_modifier = {
+                modifier = modifier_spell_resilience_petty
+                years = 5
+            }
+        }
+        flag:_lesser = { 
+            add_character_modifier = {
+                modifier = modifier_spell_resilience_lesser
+                years = 5
+            }
+        }
+        flag:_common = { 
+            add_character_modifier = {
+                modifier = modifier_spell_resilience_common
+                years = 5
+            }
+        }
+        flag:_greater = { 
+            add_character_modifier = {
+                modifier = modifier_spell_resilience_greater
+                years = 5
+            }
+        }
+        flag:_grand = { 
+            add_character_modifier = {
+                modifier = modifier_spell_resilience_grand
+                years = 5
+            }
+        }
+    } 
+}
+
+spell_resilience_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_resilience_castee_effect = {
+    switch = {
+        trigger = ROOT.var:spell_selected_size
+        flag:_petty = { 
+            add_character_modifier = {
+                modifier = modifier_spell_resilience_petty
+                years = 8
+            }
+        }
+        flag:_lesser = { 
+            add_character_modifier = {
+                modifier = modifier_spell_resilience_lesser
+                years = 8
+            }
+        }
+        flag:_common = { 
+            add_character_modifier = {
+                modifier = modifier_spell_resilience_common
+                years = 8
+            }
+        }
+        flag:_greater = { 
+            add_character_modifier = {
+                modifier = modifier_spell_resilience_greater
+                years = 8
+            }
+        }
+        flag:_grand = { 
+            add_character_modifier = {
+                modifier = modifier_spell_greater_resilience_grand
+                years = 5
+            }
+        }
+    } 
+}
+
+spell_greater_resilience_province_effect = {}
+
+spell_remedy_illness_castee_effect = {
+    custom_tooltip = spell_remedy_illness_desc
+    hidden_effect = {
+        if = {
+            limit = { has_trait = ill }
+            trigger_event = { id = health.1101 }
+        }
+        else_if = {
+            limit = { has_trait = smallpox }
+            recover_from_disease_effect = { DISEASE = smallpox }
+        }
+        else_if = {
+            limit = { has_trait = lovers_pox }
+            remove_trait = lovers_pox
+        }
+    }
+}
+
+spell_remedy_illness_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_remedy_illness_castee_effect = {
+    custom_tooltip = spell_remedy_illness_desc
+    hidden_effect = {
+        if = {
+            limit = { has_trait = ill }
+            trigger_event = { id = health.1101 }
+        }
+        else_if = {
+            limit = { has_trait = smallpox }
+            recover_from_disease_effect = { DISEASE = smallpox }
+        }
+        else_if = {
+            limit = { has_trait = lovers_pox }
+            remove_trait = lovers_pox
+        }
+    }
+}
+
+spell_greater_remedy_illness_province_effect = {} 
+
+spell_mend_wound_castee_effect = {
+    custom_tooltip = spell_mend_wound_desc
+    hidden_effect = {
+        random_list = {
+            30 = {
+                trigger = {
+                    has_trait = wounded_1
+                }
+                trigger_event = health.0001 #Recover from Wounded
+            }
+            20 = {
+                trigger = {
+                    has_trait = wounded_2
+                }
+                trigger_event = health.0002 #Recover from Severely Wounded
+            }
+            10 = {
+                trigger = {
+                    has_trait_rank = {
+                        trait = wounded
+                        rank > 2
+                    }
+                }
+                trigger_event = health.0003 #Recover from Near Death
+            }
+            15 = {
+                trigger = {
+                    has_character_modifier = infected_wound_modifier
+                }
+                trigger_event = health.0004 #Infected wound is no longer infected
+            }
+        }
+    }
+}
+
+spell_mend_wound_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_mend_wound_castee_effect = {
+    custom_tooltip = spell_mend_wound_desc
+    hidden_effect = {
+        random_list = {
+            30 = {
+                trigger = {
+                    has_trait = wounded_1
+                }
+                trigger_event = health.0001 #Recover from Wounded
+            }
+            20 = {
+                trigger = {
+                    has_trait = wounded_2
+                }
+                trigger_event = health.0002 #Recover from Severely Wounded
+            }
+            10 = {
+                trigger = {
+                    has_trait_rank = {
+                        trait = wounded
+                        rank > 2
+                    }
+                }
+                trigger_event = health.0003 #Recover from Near Death
+            }
+            15 = {
+                trigger = {
+                    has_character_modifier = infected_wound_modifier
+                }
+                trigger_event = health.0004 #Infected wound is no longer infected
+            }
+        }
+    }
+}
+
+spell_greater_mend_wound_province_effect = {}
+
+spell_remove_curse_castee_effect = {
+    custom_tooltip = spell_remove_curse_desc
+    lift_curse = yes
+}
+
+spell_remove_curse_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_cure_disease_castee_effect = {
+    custom_tooltip = spell_cure_disease_desc
+    hidden_effect = {
+        if = {
+            limit = { has_trait = ill }
+            recover_from_disease_effect = { DISEASE = ill }
+        }
+        else_if = {
+            limit = { has_trait = pneumonic }
+            recover_from_disease_effect = { DISEASE = pneumonic }
+        }
+        else_if = {
+            limit = { has_trait = gout_ridden }
+            recover_from_disease_effect = { DISEASE = gout_ridden }
+        }
+        else_if = {
+            limit = { has_trait = typhus }
+            recover_from_disease_effect = { DISEASE = typhus }
+        }
+        else_if = {
+            limit = { has_trait = consumption }
+            recover_from_disease_effect = { DISEASE = consumption }
+        }
+        else_if = {
+            limit = { has_trait = cancer }
+            recover_from_disease_effect = { DISEASE = cancer }
+        }
+        else_if = {
+            limit = { has_trait = great_pox }
+            recover_from_disease_effect = { DISEASE = great_pox }
+        }
+        else_if = {
+            limit = { has_trait = smallpox }
+            recover_from_disease_effect = { DISEASE = smallpox }
+        }
+        else_if = {
+            limit = { has_trait = bubonic_plague }
+            recover_from_disease_effect = { DISEASE = bubonic_plague }
+        }
+        else_if = {
+            limit = { has_trait = lovers_pox }
+            remove_trait = lovers_pox
+        }
+        else_if = {
+            limit = { has_trait = sanies_lupinus }
+            recover_from_disease_effect = { DISEASE = sanies_lupinus }
+        }
+        else_if = {
+            limit = { has_trait = sanguinare_vampiris }
+            recover_from_disease_effect = { DISEASE = sanguinare_vampiris }
+        }
+    }
+}
+
+spell_cure_disease_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_remove_curse_castee_effect = {
+    custom_tooltip = spell_remove_curse_desc
+    lift_curse = yes
+}
+
+spell_greater_remove_curse_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_greater_cure_disease_castee_effect = {
+    custom_tooltip = spell_cure_disease_desc
+    hidden_effect = {
+        if = {
+            limit = { has_trait = ill }
+            recover_from_disease_effect = { DISEASE = ill }
+        }
+        else_if = {
+            limit = { has_trait = pneumonic }
+            recover_from_disease_effect = { DISEASE = pneumonic }
+        }
+        else_if = {
+            limit = { has_trait = gout_ridden }
+            recover_from_disease_effect = { DISEASE = gout_ridden }
+        }
+        else_if = {
+            limit = { has_trait = typhus }
+            recover_from_disease_effect = { DISEASE = typhus }
+        }
+        else_if = {
+            limit = { has_trait = consumption }
+            recover_from_disease_effect = { DISEASE = consumption }
+        }
+        else_if = {
+            limit = { has_trait = cancer }
+            recover_from_disease_effect = { DISEASE = cancer }
+        }
+        else_if = {
+            limit = { has_trait = great_pox }
+            recover_from_disease_effect = { DISEASE = great_pox }
+        }
+        else_if = {
+            limit = { has_trait = smallpox }
+            recover_from_disease_effect = { DISEASE = smallpox }
+        }
+        else_if = {
+            limit = { has_trait = bubonic_plague }
+            recover_from_disease_effect = { DISEASE = bubonic_plague }
+        }
+        else_if = {
+            limit = { has_trait = lovers_pox }
+            remove_trait = lovers_pox
+        }
+        else_if = {
+            limit = { has_trait = sanies_lupinus }
+            recover_from_disease_effect = { DISEASE = sanies_lupinus }
+        }
+        else_if = {
+            limit = { has_trait = sanguinare_vampiris }
+            recover_from_disease_effect = { DISEASE = sanguinare_vampiris }
+        }
+    }
+}
+
+spell_greater_cure_disease_province_effect = {}
+
+
+# Necromancy
+spell_summon_skeleton_castee_effect = {
+    custom_tooltip = summon_skeleton_desc
+    if = { 
+        limit = { has_trait = experimentalist_necromancer }
+        ROOT = { custom_tooltip = spell_no_secret_necromancer_cast_desc }
+        hidden_effect = {
+            send_interface_toast = {
+                title = spell_failed
+                left_icon = root
+                custom_tooltip = spell_no_secret_necromancer_cast
+            }
+        }
+    }
+    else_if = {
+            hidden_effect = {
+            if = {
+                limit = { 
+                    has_character_modifier = modifier_ritual_unhallowed_earth
+                }
+                create_character = {
+                template = summoned_zombie_template_buffed
+                location = this.capital_province
+                gender_female_chance = 50
+                dynasty = none
+                save_scope_as = summoned_zombie
+            }
+            }
+            else = {
+                create_character = {
+                    template = summoned_zombie_template
+                    location = this.capital_province
+                    gender_female_chance = 50
+                    dynasty = none
+                    save_scope_as = summoned_zombie
+                }
+            }
+            scope:summoned_zombie = {
+                add_opinion = {
+                    target = prev
+                    modifier = thrall_opinion
+                }
+            }
+            add_hook = {
+                type = loyalty_hook
+                target = scope:summoned_zombie
+            }
+            add_courtier = scope:summoned_zombie
+        }
+    }
+}
+
+spell_summon_skeleton_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_claim_corpse_castee_effect = {
+    if = { 
+        limit = { has_trait = experimentalist_necromancer }
+        ROOT = { custom_tooltip = spell_no_secret_necromancer_cast_desc }
+        hidden_effect = {
+            send_interface_toast = {
+                title = spell_failed
+                left_icon = root
+                custom_tooltip = spell_no_secret_necromancer_cast
+            }
+        }
+    }
+    else_if = {
+        limit = {
+            potential_undead_thrall = no
+        }
+        ROOT = {
+            custom_tooltip = spell_not_revivable_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_not_revivable_desc
+                }
+            }
+        }
+    }
+    else_if = {
+        limit = {
+            NOT = {
+                OR = {
+                    is_courtier_of = ROOT
+                    is_imprisoned_by = ROOT
+                }
+            }
+        }
+        ROOT = {
+            custom_tooltip = spell_special_target_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_special_target_desc
+                }
+            }
+        }
+    }
+    else = {
+        add_character_modifier = {
+            modifier = modifier_spell_claim_corpse
+            years = 5
+        }
+
+        ROOT = { 
+            add_character_flag = new_master
+        }
+    }       
+}   
+
+
+spell_claim_corpse_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_leech_health_castee_effect = {
+    if = { 
+        limit = { has_trait = experimentalist_necromancer }
+        ROOT = { custom_tooltip = spell_no_secret_necromancer_cast_desc }
+        hidden_effect = {
+            send_interface_toast = {
+                title = spell_failed
+                left_icon = root
+                custom_tooltip = spell_no_secret_necromancer_cast
+            }
+        }
+    }
+    else_if = {
+        limit = { NOT = { has_character_flag = spell_already_afflicted } }
+        hidden_effect = {
+            add_character_flag = {
+                flag = spell_already_afflicted
+                years = 5
+            }
+        }
+        switch = {
+            trigger = ROOT.var:spell_selected_size
+            flag:_petty = {
+                if = {
+                    limit = {
+                        ROOT.faith = {
+                            has_doctrine = tenet_necromancy_worship
+                        }
+                    }
+                    send_interface_toast = {
+                        type = event_toast_effect_bad
+                        title = target_of_hostile_spell_notification
+                        left_icon = ROOT
+                        add_character_modifier = {
+                            modifier = modifier_spell_leech_health_negative_petty
+                            years = 15
+                        }
+                    }
+                    ROOT = {
+                        add_character_modifier = {
+                        modifier = modifier_spell_leech_health_positive_petty
+                        years = 15
+                        }
+                    }
+
+                } else = {
+                    send_interface_toast = {
+                        type = event_toast_effect_bad
+                        title = target_of_hostile_spell_notification
+                        left_icon = ROOT
+                        add_character_modifier = {
+                            modifier = modifier_spell_leech_health_negative_petty
+                            years = 5
+                        }
+                    }
+                    ROOT = {
+                        add_character_modifier = {
+                        modifier = modifier_spell_leech_health_positive_petty
+                        years = 5
+                        }
+                    }
+
+                }
+            }
+            flag:_lesser = { 
+                if = {
+                    limit = {
+                        ROOT.faith = {
+                            has_doctrine = tenet_necromancy_worship
+                        }
+                    }
+                    send_interface_toast = {
+                        type = event_toast_effect_bad
+                        title = target_of_hostile_spell_notification
+                        left_icon = ROOT
+                        add_character_modifier = {
+                            modifier = modifier_spell_leech_health_negative_lesser
+                            years = 15
+                        }
+                    }
+                    ROOT = {
+                        add_character_modifier = {
+                        modifier = modifier_spell_leech_health_positive_lesser
+                        years = 15
+                        }
+                    }
+
+                } else = {
+                    send_interface_toast = {
+                        type = event_toast_effect_bad
+                        title = target_of_hostile_spell_notification
+                        left_icon = ROOT
+                        add_character_modifier = {
+                            modifier = modifier_spell_leech_health_negative_lesser
+                            years = 5
+                        }
+                    }
+                    ROOT = {
+                        add_character_modifier = {
+                        modifier = modifier_spell_leech_health_positive_lesser
+                        years = 5
+                        }
+                    }
+
+                }
+            }
+            flag:_common = { 
+                if = {
+                    limit = {
+                        ROOT.faith = {
+                            has_doctrine = tenet_necromancy_worship
+                        }
+                    }
+                    send_interface_toast = {
+                        type = event_toast_effect_bad
+                        title = target_of_hostile_spell_notification
+                        left_icon = ROOT
+                        add_character_modifier = {
+                            modifier = modifier_spell_leech_health_negative_common
+                            years = 15
+                        }
+                    }
+                    ROOT = {
+                        add_character_modifier = {
+                        modifier = modifier_spell_leech_health_positive_common
+                        years = 15
+                        }
+                    }
+
+                } else = {
+                    send_interface_toast = {
+                        type = event_toast_effect_bad
+                        title = target_of_hostile_spell_notification
+                        left_icon = ROOT
+                        add_character_modifier = {
+                            modifier = modifier_spell_leech_health_negative_common
+                            years = 5
+                        }
+                    }
+                    ROOT = {
+                        add_character_modifier = {
+                        modifier = modifier_spell_leech_health_positive_common
+                        years = 5
+                        }
+                    }
+
+                }
+            }
+            flag:_greater = { 
+                if = {
+                    limit = {
+                        ROOT.faith = {
+                            has_doctrine = tenet_necromancy_worship
+                        }
+                    }
+                    send_interface_toast = {
+                        type = event_toast_effect_bad
+                        title = target_of_hostile_spell_notification
+                        left_icon = ROOT
+                        add_character_modifier = {
+                            modifier = modifier_spell_leech_health_negative_greater
+                            years = 15
+                        }
+                    }
+                    ROOT = {
+                        add_character_modifier = {
+                        modifier = modifier_spell_leech_health_positive_greater
+                        years = 15
+                        }
+                    }
+
+                } else = {
+                    send_interface_toast = {
+                        type = event_toast_effect_bad
+                        title = target_of_hostile_spell_notification
+                        left_icon = ROOT
+                        add_character_modifier = {
+                            modifier = modifier_spell_leech_health_negative_greater
+                            years = 5
+                        }
+                    }
+                    ROOT = {
+                        add_character_modifier = {
+                        modifier = modifier_spell_leech_health_positive_greater
+                        years = 5
+                        }
+                    }
+
+                }
+            }
+            flag:_grand = { 
+                if = {
+                    limit = {
+                        ROOT.faith = {
+                            has_doctrine = tenet_necromancy_worship
+                        }
+                    }
+                    send_interface_toast = {
+                        type = event_toast_effect_bad
+                        title = target_of_hostile_spell_notification
+                        left_icon = ROOT
+                        add_character_modifier = {
+                            modifier = modifier_spell_leech_health_negative_grand
+                            years = 15
+                        }
+                    }
+                    ROOT = {
+                        add_character_modifier = {
+                        modifier = modifier_spell_leech_health_positive_grand
+                        years = 15
+                        }
+                    }
+
+                } else = {
+                    send_interface_toast = {
+                        type = event_toast_effect_bad
+                        title = target_of_hostile_spell_notification
+                        left_icon = ROOT
+                        add_character_modifier = {
+                            modifier = modifier_spell_leech_health_negative_grand
+                            years = 5
+                        }
+                    }
+                    ROOT = {
+                        add_character_modifier = {
+                        modifier = modifier_spell_leech_health_positive_grand
+                        years = 5
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+    else = {
+        ROOT = {
+            custom_tooltip = spell_already_afflicted_desc
+            hidden_effect = {
+                send_interface_toast = {
+                    title = spell_failed
+                    left_icon = root
+                    custom_tooltip = spell_already_afflicted
+                }
+            }
+        }
+    }
+}
+
+spell_leech_health_province_effect = {} #left empty on purpose to avoid throwing errors
+
+spell_restless_dead_castee_effect = {}  #left empty on purpose to avoid throwing errors...?
+
+spell_restless_dead_province_effect = {
+    add_county_modifier = { modifier = modifier_spell_restless_dead years = 5 }
+    title_create_faction = {
+		type = crisis_undead_faction
+		target = root.location.county_controller
+	}
+}
+
+spell_raise_dead_castee_effect = {
+    custom_tooltip = spell_raise_dead_desc
+    if = { 
+        limit = { has_trait = experimentalist_necromancer }
+        ROOT = { custom_tooltip = spell_no_secret_necromancer_cast_desc }
+        hidden_effect = {
+            send_interface_toast = {
+                title = spell_failed
+                left_icon = root
+                custom_tooltip = spell_no_secret_necromancer_cast
+            }
+        }
+    }
+    else_if = {
+        switch = {
+            trigger = ROOT.var:spell_selected_size
+            flag:_petty = { 
+                if = {
+                    limit = {
+                        ROOT = {
+                            has_trait = lich_character
+                        }
+                    }
+                    spawn_army = {
+                        men_at_arms = {
+                            type = risen_dead
+                            stacks = 3
+                        }
+                        location = this.capital_province
+                        inheritable = no
+                        uses_supply = no
+                        name = "risen_dead"
+                    }
+                }
+                else = {
+                    spawn_army = {
+                        men_at_arms = {
+                            type = risen_dead
+                            stacks = 1
+                        }
+                        location = this.capital_province
+                        inheritable = no
+                        uses_supply = no
+                        name = "risen_dead"
+                    }
+                }
+              }
+            
+            flag:_lesser = { 
+                if = {
+                    limit = {
+                        ROOT = {
+                            has_trait = lich_character
+                        }
+                    }
+                    spawn_army = {
+                        men_at_arms = {
+                            type = risen_dead
+                            stacks = 4
+                        }
+                        location = this.capital_province
+                        inheritable = no
+                        uses_supply = no
+                        name = "risen_dead"
+                    }
+                }
+                else = {
+                    spawn_army = {
+                        men_at_arms = {
+                            type = risen_dead
+                            stacks = 2
+                        }
+                        location = this.capital_province
+                        inheritable = no
+                        uses_supply = no
+                        name = "risen_dead"
+                    }
+                }
+            }
+            flag:_common = { 
+                if = {
+                    limit = {
+                        ROOT = {
+                            has_trait = lich_character
+                        }
+                    }
+                    spawn_army = {
+                        men_at_arms = {
+                            type = risen_dead
+                            stacks = 6
+                        }
+                        location = this.capital_province
+                        inheritable = no
+                        uses_supply = no
+                        name = "risen_dead"
+                    }
+                }
+                else = {
+                    spawn_army = {
+                        men_at_arms = {
+                            type = risen_dead
+                            stacks = 3
+                        }
+                        location = this.capital_province
+                        inheritable = no
+                        uses_supply = no
+                        name = "risen_dead"
+                    }
+                }
+            }
+            flag:_greater = { 
+                if = {
+                    limit = {
+                        ROOT = {
+                            has_trait = lich_character
+                        }
+                    }
+                    spawn_army = {
+                        men_at_arms = {
+                            type = risen_dead
+                            stacks = 8
+                        }
+                        location = this.capital_province
+                        inheritable = no
+                        uses_supply = no
+                        name = "risen_dead"
+                    }
+                }
+                else = {
+                    spawn_army = {
+                        men_at_arms = {
+                            type = risen_dead
+                            stacks = 4
+                        }
+                        location = this.capital_province
+                        inheritable = no
+                        uses_supply = no
+                        name = "risen_dead"
+                    }
+                }
+            }
+            flag:_grand = { 
+                if = {
+                    limit = {
+                        ROOT = {
+                            has_trait = lich_character
+                        }
+                    }
+                    spawn_army = {
+                        men_at_arms = {
+                            type = risen_dead
+                            stacks = 15
+                        }
+                        location = this.capital_province
+                        inheritable = no
+                        uses_supply = no
+                        name = "risen_dead"
+                    }
+                }
+                else = {
+                    spawn_army = {
+                        men_at_arms = {
+                            type = risen_dead
+                            stacks = 5
+                        }
+                        location = this.capital_province
+                        inheritable = no
+                        uses_supply = no
+                        name = "risen_dead"
+                    }
+                }
+            }
+        }
+    }
+}
+
+spell_raise_dead_province_effect = {} #left empty on purpose to avoid throwing errors
+
+# global spell lists up to 45 is fine, after some need to be skipped maybe if wasteland is invalid
+
+# add_spell = {
+#     PREV = { add_to_variable_list = { name = spell_list target = PREV } }
+#     set_variable = { name = spell value = flag:$NAME$ }
+# }
+
+init_alteration = {
+    clear_variable_list = spell_list
+    school_alteration_list = { EFFECT = add_to_spell_list }
+}
+init_conjuration = {
+    clear_variable_list = spell_list
+    school_conjuration_list = { EFFECT = add_to_spell_list }
+}
+init_destruction = {
+    clear_variable_list = spell_list
+    school_destruction_list = { EFFECT = add_to_spell_list }
+}
+init_illusion = {
+    clear_variable_list = spell_list
+    school_illusion_list = { EFFECT = add_to_spell_list }
+}
+init_restoration = {
+    clear_variable_list = spell_list
+    school_restoration_list = { EFFECT = add_to_spell_list }
+}
+init_necromancy = {
+    clear_variable_list = spell_list
+    school_necromancy_list = { EFFECT = add_to_spell_list }
+}
+
+add_to_spell_list = {
+    add_to_variable_list = { name = spell_list target = flag:$SPELL$ }
+}
+
+school_alteration_list = {
+    $EFFECT$ = { SPELL = fortify_walls }
+    $EFFECT$ = { SPELL = dispel }
+    $EFFECT$ = { SPELL = transmute }
+    $EFFECT$ = { SPELL = burden }
+    $EFFECT$ = { SPELL = absorb_skill }
+}
+school_conjuration_list = {
+    $EFFECT$ = { SPELL = oblivion_knowledge }    
+    $EFFECT$ = { SPELL = banish_daedra }
+    $EFFECT$ = { SPELL = summon_atronach }
+    $EFFECT$ = { SPELL = summon_dremora }
+    $EFFECT$ = { SPELL = daedric_army }
+}
+school_destruction_list = {
+    $EFFECT$ = { SPELL = detract_magicka }
+    $EFFECT$ = { SPELL = destroy_walls }
+    $EFFECT$ = { SPELL = increase_wounds }    
+    $EFFECT$ = { SPELL = aggravate_vulnerability }
+    $EFFECT$ = { SPELL = destroy_health }
+}
+school_illusion_list = {
+    $EFFECT$ = { SPELL = muffled_senses }
+    $EFFECT$ = { SPELL = charm }
+    $EFFECT$ = { SPELL = calm }
+    $EFFECT$ = { SPELL = exasperate }
+    $EFFECT$ = { SPELL = hysteria }
+}
+school_restoration_list = {
+    $EFFECT$ = { SPELL = resilience }
+    $EFFECT$ = { SPELL = remedy_illness }
+    $EFFECT$ = { SPELL = mend_wound }
+    $EFFECT$ = { SPELL = remove_curse }
+    $EFFECT$ = { SPELL = cure_disease }
+}
+school_necromancy_list = {
+    $EFFECT$ = { SPELL = summon_skeleton }
+    $EFFECT$ = { SPELL = leech_health }
+    $EFFECT$ = { SPELL = claim_corpse }
+    $EFFECT$ = { SPELL = restless_dead }
+    $EFFECT$ = { SPELL = raise_dead }
+}
+
+spell_tooltip = {
+    if = {
+        limit = { $SPELL$_level = scope:tier }
+        # if = {
+        #     limit = { $SPELL$_hostile = 1 $SPELL$_province = 1 } #it gets weird with $ and '. [Localize('$SPELL$_name')] = [Localize(flames$_name')] so add ', but still have $ in middle
+        #     custom_tooltip = "[Localize(''$SPELL$_name')] #F (Hostile, Province)#!" #fix #F issue  by using localize
+        # }
+        # else_if = {
+        #     limit = { $SPELL$_hostile = 1 }
+        #     custom_tooltip = "[Localize(''$SPELL$_name')] #F (Hostile)#!"
+        # }
+        # else_if = {
+        #     limit = { $SPELL$_province = 1 }
+        #     custom_tooltip = "[Localize(''$SPELL$_name')] #F (Province)#!"
+        # }
+        # else = {
+        custom_tooltip = $SPELL$_perk_name
+        # }
+    }
+}
+
+school_spell_master_effect = {
+    switch = {
+        trigger = var:spell_school
+
+        flag:alteration = {
+            switch = {
+                trigger = scope:spell
+                flag:fortify_walls = { $EFFECT$ = { SCHOOL = alteration SPELL = fortify_walls } }
+                flag:dispel = { $EFFECT$ = { SCHOOL = alteration SPELL = dispel } }
+                flag:transmute = { $EFFECT$ = { SCHOOL = alteration SPELL = transmute } }
+                flag:burden = { $EFFECT$ = { SCHOOL = alteration SPELL = burden } }                
+                flag:absorb_skill = { $EFFECT$ = { SCHOOL = alteration SPELL = absorb_skill } }
+            }
+        }
+
+        flag:conjuration = {
+            switch = {
+                trigger = scope:spell
+                flag:oblivion_knowledge = { $EFFECT$ = { SCHOOL = conjuration SPELL = oblivion_knowledge } }                
+                flag:banish_daedra = { $EFFECT$ = { SCHOOL = conjuration SPELL = banish_daedra } }
+                flag:summon_atronach = { $EFFECT$ = { SCHOOL = conjuration SPELL = summon_atronach } }
+                flag:summon_dremora = { $EFFECT$ = { SCHOOL = conjuration SPELL = summon_dremora } }
+                flag:daedric_army = { $EFFECT$ = { SCHOOL = conjuration SPELL = daedric_army } }
+            }
+        }
+
+        flag:destruction = {
+            switch = {
+                trigger = scope:spell
+                flag:detract_magicka = { $EFFECT$ = { SCHOOL = destruction SPELL = detract_magicka } }
+                flag:destroy_walls = { $EFFECT$ = { SCHOOL = destruction SPELL = destroy_walls } }
+                flag:increase_wounds = { $EFFECT$ = { SCHOOL = destruction SPELL = increase_wounds } }
+                flag:aggravate_vulnerability = { $EFFECT$ = { SCHOOL = destruction SPELL = aggravate_vulnerability } }
+                flag:destroy_health = { $EFFECT$ = { SCHOOL = destruction SPELL = destroy_health } }             
+            }
+        }
+
+        flag:illusion = {
+            switch = {
+                trigger = scope:spell
+                flag:muffled_senses = { $EFFECT$ = { SCHOOL = illusion SPELL = muffled_senses } }
+                flag:charm = { $EFFECT$ = { SCHOOL = illusion SPELL = charm } }
+                flag:calm = { $EFFECT$ = { SCHOOL = illusion SPELL = calm } }
+                flag:exasperate = { $EFFECT$ = { SCHOOL = illusion SPELL = exasperate } }
+                flag:hysteria = { $EFFECT$ = { SCHOOL = illusion SPELL = hysteria } }                
+            }
+        }
+
+        flag:restoration = {
+            switch = {
+                trigger = scope:spell
+                flag:resilience = { $EFFECT$ = { SCHOOL = restoration SPELL = resilience } }
+                flag:remedy_illness = { $EFFECT$ = { SCHOOL = restoration SPELL = remedy_illness } }
+                flag:mend_wound = { $EFFECT$ = { SCHOOL = restoration SPELL = mend_wound } }
+                flag:remove_curse = { $EFFECT$ = { SCHOOL = restoration SPELL = remove_curse } }
+                flag:cure_disease = { $EFFECT$ = { SCHOOL = restoration SPELL = cure_disease } }
+            }
+        }
+
+        flag:necromancy = {
+            switch = {
+                trigger = scope:spell
+                flag:summon_skeleton = { $EFFECT$ = { SCHOOL = necromancy SPELL = summon_skeleton } }
+                flag:leech_health = { $EFFECT$ = { SCHOOL = necromancy SPELL = leech_health } }
+                flag:claim_corpse = { $EFFECT$ = { SCHOOL = necromancy SPELL = claim_corpse } }
+                flag:restless_dead = { $EFFECT$ = { SCHOOL = necromancy SPELL = restless_dead } }
+                flag:raise_dead = { $EFFECT$ = { SCHOOL = necromancy SPELL = raise_dead } }
+            }
+        }
+    }
+}
+school_spell_master_boosted_effect = {
+    switch = {
+        trigger = var:spell_school
+
+        flag:alteration = {
+            switch = {
+                trigger = scope:spell
+                flag:fortify_walls = { $EFFECT$ = { SCHOOL = alteration SPELL = greater_fortify_walls } }
+                flag:dispel = { $EFFECT$ = { SCHOOL = alteration SPELL = greater_dispel } }
+                flag:transmute = { $EFFECT$ = { SCHOOL = alteration SPELL = greater_transmute } }
+                flag:burden = { $EFFECT$ = { SCHOOL = alteration SPELL = greater_burden } }                
+                flag:absorb_skill = { $EFFECT$ = { SCHOOL = alteration SPELL = greater_absorb_skill } }
+            }
+        }
+
+        flag:conjuration = {
+            switch = {
+                trigger = scope:spell
+                flag:oblivion_knowledge = { $EFFECT$ = { SCHOOL = conjuration SPELL = greater_oblivion_knowledge } }                
+                flag:banish_daedra = { $EFFECT$ = { SCHOOL = conjuration SPELL = greater_banish_daedra } }
+                flag:summon_atronach = { $EFFECT$ = { SCHOOL = conjuration SPELL = greater_summon_atronach } }
+                flag:summon_dremora = { $EFFECT$ = { SCHOOL = conjuration SPELL = greater_summon_dremora } }
+                flag:daedric_army = { $EFFECT$ = { SCHOOL = conjuration SPELL = greater_daedric_army } }
+            }
+        }
+
+        flag:destruction = {
+            switch = {
+                trigger = scope:spell
+                flag:detract_magicka = { $EFFECT$ = { SCHOOL = destruction SPELL = greater_detract_magicka } }
+                flag:destroy_walls = { $EFFECT$ = { SCHOOL = destruction SPELL = greater_destroy_walls } }
+                flag:increase_wounds = { $EFFECT$ = { SCHOOL = destruction SPELL = greater_increase_wounds } }
+                flag:aggravate_vulnerability = { $EFFECT$ = { SCHOOL = destruction SPELL = greater_aggravate_vulnerability } }
+                flag:destroy_health = { $EFFECT$ = { SCHOOL = destruction SPELL = greater_destroy_health } }             
+            }
+        }
+
+        flag:illusion = {
+            switch = {
+                trigger = scope:spell
+                flag:muffled_senses = { $EFFECT$ = { SCHOOL = illusion SPELL = greater_muffled_senses } }
+                flag:charm = { $EFFECT$ = { SCHOOL = illusion SPELL = greater_charm } }
+                flag:calm = { $EFFECT$ = { SCHOOL = illusion SPELL = greater_calm } }
+                flag:exasperate = { $EFFECT$ = { SCHOOL = illusion SPELL = greater_exasperate } }
+                flag:hysteria = { $EFFECT$ = { SCHOOL = illusion SPELL = greater_hysteria } }                
+            }
+        }
+
+        flag:restoration = {
+            switch = {
+                trigger = scope:spell
+                flag:resilience = { $EFFECT$ = { SCHOOL = restoration SPELL = greater_resilience } }
+                flag:remedy_illness = { $EFFECT$ = { SCHOOL = restoration SPELL = greater_remedy_illness } }
+                flag:mend_wound = { $EFFECT$ = { SCHOOL = restoration SPELL = mend_wound } }
+                flag:remove_curse = { $EFFECT$ = { SCHOOL = restoration SPELL = remove_curse } }
+                flag:cure_disease = { $EFFECT$ = { SCHOOL = restoration SPELL = cure_disease } }
+            }
+        }
+
+        flag:necromancy = {
+            switch = {
+                trigger = scope:spell
+                flag:summon_skeleton = { $EFFECT$ = { SCHOOL = necromancy SPELL = summon_skeleton } }
+                flag:leech_health = { $EFFECT$ = { SCHOOL = necromancy SPELL = leech_health } }
+                flag:claim_corpse = { $EFFECT$ = { SCHOOL = necromancy SPELL = claim_corpse } }
+                flag:restless_dead = { $EFFECT$ = { SCHOOL = necromancy SPELL = restless_dead } }
+                flag:raise_dead = { $EFFECT$ = { SCHOOL = necromancy SPELL = raise_dead } }
+            }
+        }
+    }
+}
+
+spell_caster_effect = {
+    school_spell_master_effect = { EFFECT = spell_caster }
+}
+spell_caster = {
+    save_temporary_scope_value_as = { name = unimportant value = flag:$SCHOOL$ } # school not currently used, a use is needed
+    var:spell_caster = {
+        custom_label = spell_name_caster
+        #save_temporary_scope_value_as = { name = cost value = { value = 0 subtract = $SPELL$_cost } }
+        #add_magicka = { VALUE = scope:cost }
+        if = {
+			limit = { 
+                NOT = {
+                    exists = ROOT.var:spell_selected_size
+                    has_variable_list = spell_size 
+                } 
+            }
+			add_magicka = { VALUE = $SPELL$_cost.negate }
+		}
+		else = {
+			switch = {
+                trigger = ROOT.var:spell_selected_size
+                flag:_petty = { 
+                    add_magicka = { VALUE = $SPELL$_cost.negate }
+                }
+                flag:_lesser = { 
+                    add_magicka = { VALUE = $SPELL$_lesser_cost.negate }
+                }
+                flag:_common = { 
+                    add_magicka = { VALUE = $SPELL$_common_cost.negate }
+                }
+                flag:_greater = { 
+                    add_magicka = { VALUE = $SPELL$_greater_cost.negate }
+                }
+                flag:_grand = { 
+                    add_magicka = { VALUE = $SPELL$_grand_cost.negate }
+                }
+            }
+		}
+    }
+}
+
+spell_castee_effect = {
+    if = {
+        limit = {
+            exists = var:spell_caster.dynasty   
+			var:spell_caster.dynasty = { has_dynasty_perk = erudition_legacy_2 }
+			house = prev.house
+		}
+        school_spell_master_boosted_effect = { EFFECT = spell_castee }
+    } else= {
+        school_spell_master_effect = { EFFECT = spell_castee }
+    }
+}
+spell_castee = {
+    save_temporary_scope_value_as = { name = unimportant value = flag:$SCHOOL$ } # school not currently used, a use is needed
+
+    custom_label = spell_name_castee
+    if = {
+        limit = { $SPELL$_province = 0 } #cast on the castee if not a province spell
+        var:spell_recipient = { spell_$SPELL$_castee_effect = yes }
+        if = {
+            limit = { #opinion malus for casting hostile spells
+                $SPELL$_hostile = 1
+                NOR = {
+                    var:spell_recipient = ROOT # cant cast on self
+                    var:spell_recipient = var:spell_caster # cant order cm to cast on self
+                }
+                
+            }
+            var:spell_recipient = { add_opinion = { target = PREV modifier = cast_hostile_spell } }
+        }
+    }
+    if = {
+        limit = { #cast on the selected county for province spells. no special treatment for hostile currently
+            $SPELL$_province = 1
+            exists = var:spell_county #need to check against current location for hostile. may just use current location directly
+            # trigger_if = { #need to block if no valid counties. exists should work
+            #     limit = { variable_list_size = { name = spell_counties value > 0 } }
+            # }
+        }
+        var:spell_county = { spell_$SPELL$_province_effect = yes }
+    }
+}
+
+##############
+##  RITUAL  ##
+##############
+
+ritual_master_effect = {
+    # Alteration
+	if = {
+		limit = { 
+            has_perk = alteration_minor_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+		$EFFECT$ = { RITUAL = swift_swim }
+	}
+    if = {
+		limit = { 
+            has_perk = alteration_medium_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+        $EFFECT$ = { RITUAL = feather }
+	}
+    if = {
+		limit = {
+            has_perk = alteration_major_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+		$EFFECT$ = { RITUAL = oakflesh }
+	}
+	# Conjuration
+	if = {
+		limit = { 
+            has_perk = conjuration_minor_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+		$EFFECT$ = { RITUAL = familiar_scamp }
+		$EFFECT$ = { RITUAL = familiar_pocket_watcher }
+		$EFFECT$ = { RITUAL = familiar_fiendroth }
+		$EFFECT$ = { RITUAL = familiar_daedrat }
+		$EFFECT$ = { RITUAL = familiar_banekin }
+	}
+    if = {
+		limit = { 
+            has_perk = conjuration_medium_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+		$EFFECT$ = { RITUAL = bound_weapon }
+	}
+    if = {
+		limit = { 
+            has_perk = conjuration_major_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+		$EFFECT$ = { RITUAL = bound_armor }
+	}
+	# Destruction
+    if = {
+		limit = { 
+            has_perk = destruction_minor_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+		$EFFECT$ = { RITUAL = ignited_weapons }
+	}
+    if = {
+		limit = { 
+            has_perk = destruction_medium_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+		$EFFECT$ = { RITUAL = empower_mages }
+	}
+    if = {
+		limit = { 
+            has_perk = destruction_major_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+		$EFFECT$ = { RITUAL = elemental_cloaks }
+	}
+	# Illusion
+	if = {
+		limit = { 
+            has_perk = illusion_minor_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+        $EFFECT$ = { RITUAL = conceal }		
+	}
+    if = {
+		limit = { 
+            has_perk = illusion_medium_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+		$EFFECT$ = { RITUAL = rally }
+	}
+    if = {
+		limit = {
+            has_perk = illusion_major_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+		$EFFECT$ = { RITUAL = invisibility }
+	}
+	# Restoration
+    if = {
+		limit = { 
+            has_perk = restoration_minor_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+		$EFFECT$ = { RITUAL = resist_disease }
+	}
+	if = {
+		limit = {
+            has_perk = restoration_medium_rituals_perk 
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }   
+        $EFFECT$ = { RITUAL = fortify_diplomacy }
+		$EFFECT$ = { RITUAL = fortify_martial }
+		$EFFECT$ = { RITUAL = fortify_stewardship }
+		$EFFECT$ = { RITUAL = fortify_intrigue }
+		$EFFECT$ = { RITUAL = fortify_learning }
+	}
+    if = {
+		limit = { 
+            has_perk = restoration_major_rituals_perk 
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }        
+		$EFFECT$ = { RITUAL = mass_healing }
+	}
+	# Necromancy
+	if = {
+		limit = { 
+            has_perk = necromancy_minor_rituals_perk 
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }       
+		$EFFECT$ = { RITUAL = bone_mantle }
+	}
+    if = {
+		limit = { 
+            has_perk = necromancy_medium_rituals_perk 
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }     
+		$EFFECT$ = { RITUAL = unhallowed_earth }
+	}
+    if = {
+		limit = { 
+            has_perk = necromancy_major_rituals_perk
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }        
+		$EFFECT$ = { RITUAL = undead_frenzy }
+	}
+}
+ritual_master_switch_effect = {
+    switch = {
+        trigger = var:ritual_slot_$SLOT$        
+        flag:swift_swim = { $EFFECT$ = { RITUAL = swift_swim } }
+        flag:feather = { $EFFECT$ = { RITUAL = feather } }
+        flag:oakflesh = { $EFFECT$ = { RITUAL = oakflesh } }
+        flag:familiar_scamp = { $EFFECT$ = { RITUAL = familiar_scamp } }
+		flag:familiar_pocket_watcher = { $EFFECT$ = { RITUAL = familiar_pocket_watcher } }
+		flag:familiar_fiendroth = { $EFFECT$ = { RITUAL = familiar_fiendroth } }
+		flag:familiar_daedrat = { $EFFECT$ = { RITUAL = familiar_daedrat } }
+		flag:familiar_banekin = { $EFFECT$ = { RITUAL = familiar_banekin } }
+        flag:bound_weapon = { $EFFECT$ = { RITUAL = bound_weapon } }
+        flag:bound_armor = { $EFFECT$ = { RITUAL = bound_armor } }
+        flag:ignited_weapons = { $EFFECT$ = { RITUAL = ignited_weapons } }
+        flag:empower_mages = { $EFFECT$ = { RITUAL = empower_mages } }
+        flag:elemental_cloaks = { $EFFECT$ = { RITUAL = elemental_cloaks } }
+        flag:conceal = { $EFFECT$ = { RITUAL = conceal } }
+        flag:rally = { $EFFECT$ = { RITUAL = rally } }
+        flag:invisibility = { $EFFECT$ = { RITUAL = invisibility } }
+        flag:resist_disease = { $EFFECT$ = { RITUAL = resist_disease } }
+        flag:fortify_diplomacy = { $EFFECT$ = { RITUAL = fortify_diplomacy } }
+        flag:fortify_martial = { $EFFECT$ = { RITUAL = fortify_martial } }
+        flag:fortify_stewardship = { $EFFECT$ = { RITUAL = fortify_stewardship } }
+        flag:fortify_intrigue = { $EFFECT$ = { RITUAL = fortify_intrigue } }
+        flag:fortify_learning = { $EFFECT$ = { RITUAL = fortify_learning } }
+        flag:mass_healing = { $EFFECT$ = { RITUAL = mass_healing } }
+        flag:bone_mantle = { $EFFECT$ = { RITUAL = bone_mantle } }
+        flag:unhallowed_earth = { $EFFECT$ = { RITUAL = unhallowed_earth } }
+        flag:undead_frenzy = { $EFFECT$ = { RITUAL = undead_frenzy } }
+    }
+}
+
+ritual_build_list = { #split to builder and rebuilder. first checks triggers
+    clear_variable_list = ritual_available
+    ritual_master_effect = { EFFECT = ritual_list_builder }
+}
+
+ritual_list_builder = {
+	add_to_variable_list = { name = ritual_available target = flag:$RITUAL$ }
+}
+
+set_ritual_modifier = {
+    if = {
+        limit = {
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+    }
+    ritual_master_switch_effect = { SLOT = $SLOT$ EFFECT = ritual_add_modifier }
+}
+
+ritual_add_modifier = {
+    add_character_modifier = modifier_ritual_$RITUAL$
+    send_interface_toast = {
+        title = rituals_currently_changed.tt
+
+        add_character_modifier = {
+            modifier = rituals_currently_changed
+            years = 1
+        }
+    }
+    change_variable = { name = ritual_upkeep add = $RITUAL$_upkeep }
+}
+
+remove_ritual_modifier = {
+    if = {
+        limit = {
+            NOT = { has_character_modifier = rituals_currently_changed }
+        }
+    }
+    ritual_master_switch_effect = { SLOT = $SLOT$ EFFECT = ritual_remove_modifier }
+}
+
+ritual_remove_modifier = {
+    remove_character_modifier = modifier_ritual_$RITUAL$
+    if = {
+        limit = { NOT = { is_target_in_variable_list = { name = ritual_suspended target = scope:slot } } }
+        change_variable = { name = ritual_upkeep subtract = $RITUAL$_upkeep }
+    }
+}
+
+grand_ritual_master_effect = {
+    $EFFECT$ = { RITUAL = life_extension_ }
+    $EFFECT$ = { RITUAL = lichdom_ }
+}
+grand_ritual_master_switch_effect = {
+    switch = {
+        trigger = scope:ritual
+        flag:life_extension_ = { $EFFECT$ = { RITUAL = life_extension_ } }
+        flag:lichdom_ = { $EFFECT$ = { RITUAL = lichdom_ } }
+    }
+}
+
+grand_ritual_build_list = { #split to builder and rebuilder. first checks triggers
+    clear_variable_list = grand_rituals
+    grand_ritual_master_effect = { EFFECT = grand_ritual_list_builder }
+}
+
+grand_ritual_list_builder = {
+    add_to_variable_list = { name = grand_rituals target = flag:$RITUAL$ }
+}
+
+grand_ritual_story_start = {
+    grand_ritual_master_switch_effect = { EFFECT = grand_ritual_story }
+}
+
+grand_ritual_story = {
+    create_story = story_cycle_ritual_$RITUAL$
+    set_variable = { name = grand_ritual_complete value = yes days = $RITUAL$time }
+}
+
+gr_event_outcome_effect = {
+    if = {
+        limit = {
+            OR = {
+                $SUCC$ < $SWING$
+                $FAIL$ < $SWING$
+            }
+        }
+        debug_log = "Grand Ritual Event Outcome - SWING > SUCC/FAIL chance"
+    }
+    random_list = {
+        $SUCC$ = { #success
+            modifier = {
+                add = {
+                    value = $SKILL$
+                    max = { value = $THRESH$ multiply = 2 }
+                    subtract = $THRESH$
+                    divide = $THRESH$
+                    multiply = $SWING$
+                }
+            }
+            save_scope_value_as = { name = success value = yes }
+            custom_tooltip = gr_event_outcome_effect_success
+        }
+        $FAIL$ = { #failure
+            modifier = {
+                add = {
+                    value = $SKILL$
+                    max = { value = $THRESH$ multiply = 2 }
+                    subtract = $THRESH$
+                    divide = $THRESH$
+                    multiply = $SWING$
+                    multiply = -1
+                }
+            }
+            save_scope_value_as = { name = success value = no }
+            custom_tooltip = gr_event_outcome_effect_failure
+        }
+    }
+    #base chance 50/50, swing is how far can inc/dec chance eg swing25 = chance25/75
+    #threshold is the 0 value. at skill=threshold base chance used, skill=2*threshold max swing to positive, skill=0 max swing negative
+}
+
+conjuration_remove_atronach = {
+    if = {
+        limit = {
+            has_character_modifier = modifier_spell_summon_flame_atronach
+        }
+        remove_character_modifier = modifier_spell_summon_flame_atronach
+    }
+    if = {
+        limit = {
+            has_character_modifier = modifier_spell_summon_frost_atronach
+        }
+        remove_character_modifier = modifier_spell_summon_frost_atronach
+    }
+    if = {
+        limit = {
+            has_character_modifier = modifier_spell_summon_storm_atronach
+        }
+        remove_character_modifier = modifier_spell_summon_storm_atronach
+    }
+}
+
+ek_magic_perks_effect = {
+    # 1
+    random_list = {
+        10 = {
+            trigger = { NOT = { has_perk = alteration_novice_perk } }
+            add_perk = alteration_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = alteration_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = alteration_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = alteration_minor_rituals_perk } }
+                            add_perk = alteration_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = alteration_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = alteration_medium_rituals_perk }
+                                        has_perk = alteration_minor_rituals_perk
+                                    }
+                                    add_perk = alteration_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = alteration_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = alteration_major_rituals_perk }
+                                                has_perk = alteration_medium_rituals_perk
+                                            }
+                                            add_perk = alteration_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = conjuration_major_rituals_perk
+                                            } 
+                                            add_perk = conjuration_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        10 = {
+            trigger = { NOT = { has_perk = conjuration_novice_perk } }
+            add_perk = conjuration_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = conjuration_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = conjuration_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = conjuration_minor_rituals_perk } }
+                            add_perk = conjuration_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = conjuration_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = conjuration_medium_rituals_perk }
+                                        has_perk = conjuration_minor_rituals_perk
+                                    }
+                                    add_perk = conjuration_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = conjuration_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = conjuration_major_rituals_perk }
+                                                has_perk = conjuration_medium_rituals_perk
+                                            }
+                                            add_perk = conjuration_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = conjuration_major_rituals_perk
+                                            } 
+                                            add_perk = conjuration_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        10 = {
+            trigger = { NOT = { has_perk = destruction_novice_perk } }
+            add_perk = destruction_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = destruction_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = destruction_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = destruction_minor_rituals_perk } }
+                            add_perk = destruction_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = destruction_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = destruction_medium_rituals_perk }
+                                        has_perk = destruction_minor_rituals_perk
+                                    }
+                                    add_perk = destruction_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = destruction_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = destruction_major_rituals_perk }
+                                                has_perk = destruction_medium_rituals_perk
+                                            }
+                                            add_perk = destruction_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = destruction_major_rituals_perk
+                                            } 
+                                            add_perk = destruction_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        10 = {
+            trigger = { NOT = { has_perk = illusion_novice_perk } }
+            add_perk = illusion_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = illusion_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = illusion_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = illusion_minor_rituals_perk } }
+                            add_perk = illusion_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = illusion_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = illusion_medium_rituals_perk }
+                                        has_perk = illusion_minor_rituals_perk
+                                    }
+                                    add_perk = illusion_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = illusion_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = illusion_major_rituals_perk }
+                                                has_perk = illusion_medium_rituals_perk
+                                            }
+                                            add_perk = illusion_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = illusion_major_rituals_perk
+                                            } 
+                                            add_perk = illusion_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        10 = {
+            trigger = { NOT = { has_perk = restoration_novice_perk } }
+            add_perk = restoration_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = restoration_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = restoration_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = restoration_minor_rituals_perk } }
+                            add_perk = restoration_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = restoration_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = restoration_medium_rituals_perk }
+                                        has_perk = restoration_minor_rituals_perk
+                                    }
+                                    add_perk = restoration_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = restoration_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = restoration_major_rituals_perk }
+                                                has_perk = restoration_medium_rituals_perk
+                                            }
+                                            add_perk = restoration_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = restoration_major_rituals_perk
+                                            } 
+                                            add_perk = restoration_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        50 = {
+            trigger = { 
+                is_necromancer = yes
+            }
+            if = { 
+                limit = { NOT = { has_perk = necromancy_novice_perk } }
+                add_perk = necromancy_novice_perk
+            }
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = necromancy_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = necromancy_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = necromancy_minor_rituals_perk } }
+                            add_perk = necromancy_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = necromancy_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = necromancy_medium_rituals_perk }
+                                        has_perk = necromancy_minor_rituals_perk
+                                    }
+                                    add_perk = necromancy_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = necromancy_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = necromancy_major_rituals_perk }
+                                                has_perk = necromancy_medium_rituals_perk
+                                            }
+                                            add_perk = necromancy_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = necromancy_major_rituals_perk
+                                            } 
+                                            add_perk = necromancy_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }            
+    # 2
+    random_list = {
+        10 = {
+            trigger = { NOT = { has_perk = alteration_novice_perk } }
+            add_perk = alteration_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = alteration_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = alteration_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = alteration_minor_rituals_perk } }
+                            add_perk = alteration_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = alteration_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = alteration_medium_rituals_perk }
+                                        has_perk = alteration_minor_rituals_perk
+                                    }
+                                    add_perk = alteration_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = alteration_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = alteration_major_rituals_perk }
+                                                has_perk = alteration_medium_rituals_perk
+                                            }
+                                            add_perk = alteration_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = conjuration_major_rituals_perk
+                                            } 
+                                            add_perk = conjuration_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        10 = {
+            trigger = { NOT = { has_perk = conjuration_novice_perk } }
+            add_perk = conjuration_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = conjuration_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = conjuration_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = conjuration_minor_rituals_perk } }
+                            add_perk = conjuration_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = conjuration_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = conjuration_medium_rituals_perk }
+                                        has_perk = conjuration_minor_rituals_perk
+                                    }
+                                    add_perk = conjuration_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = conjuration_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = conjuration_major_rituals_perk }
+                                                has_perk = conjuration_medium_rituals_perk
+                                            }
+                                            add_perk = conjuration_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = conjuration_major_rituals_perk
+                                            } 
+                                            add_perk = conjuration_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        10 = {
+            trigger = { NOT = { has_perk = destruction_novice_perk } }
+            add_perk = destruction_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = destruction_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = destruction_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = destruction_minor_rituals_perk } }
+                            add_perk = destruction_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = destruction_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = destruction_medium_rituals_perk }
+                                        has_perk = destruction_minor_rituals_perk
+                                    }
+                                    add_perk = destruction_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = destruction_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = destruction_major_rituals_perk }
+                                                has_perk = destruction_medium_rituals_perk
+                                            }
+                                            add_perk = destruction_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = destruction_major_rituals_perk
+                                            } 
+                                            add_perk = destruction_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        10 = {
+            trigger = { NOT = { has_perk = illusion_novice_perk } }
+            add_perk = illusion_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = illusion_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = illusion_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = illusion_minor_rituals_perk } }
+                            add_perk = illusion_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = illusion_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = illusion_medium_rituals_perk }
+                                        has_perk = illusion_minor_rituals_perk
+                                    }
+                                    add_perk = illusion_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = illusion_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = illusion_major_rituals_perk }
+                                                has_perk = illusion_medium_rituals_perk
+                                            }
+                                            add_perk = illusion_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = illusion_major_rituals_perk
+                                            } 
+                                            add_perk = illusion_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        10 = {
+            trigger = { NOT = { has_perk = restoration_novice_perk } }
+            add_perk = restoration_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = restoration_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = restoration_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = restoration_minor_rituals_perk } }
+                            add_perk = restoration_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = restoration_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = restoration_medium_rituals_perk }
+                                        has_perk = restoration_minor_rituals_perk
+                                    }
+                                    add_perk = restoration_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = restoration_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = restoration_major_rituals_perk }
+                                                has_perk = restoration_medium_rituals_perk
+                                            }
+                                            add_perk = restoration_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = restoration_major_rituals_perk
+                                            } 
+                                            add_perk = restoration_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        50 = {
+            trigger = { 
+                is_necromancer = yes
+            }
+            if = { 
+                limit = { NOT = { has_perk = necromancy_novice_perk } }
+                add_perk = necromancy_novice_perk
+            }
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = necromancy_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = necromancy_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = necromancy_minor_rituals_perk } }
+                            add_perk = necromancy_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = necromancy_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = necromancy_medium_rituals_perk }
+                                        has_perk = necromancy_minor_rituals_perk
+                                    }
+                                    add_perk = necromancy_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = necromancy_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = necromancy_major_rituals_perk }
+                                                has_perk = necromancy_medium_rituals_perk
+                                            }
+                                            add_perk = necromancy_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = necromancy_major_rituals_perk
+                                            } 
+                                            add_perk = necromancy_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }  
+    # 3
+    random_list = {
+        10 = {
+            trigger = { NOT = { has_perk = alteration_novice_perk } }
+            add_perk = alteration_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = alteration_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = alteration_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = alteration_minor_rituals_perk } }
+                            add_perk = alteration_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = alteration_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = alteration_medium_rituals_perk }
+                                        has_perk = alteration_minor_rituals_perk
+                                    }
+                                    add_perk = alteration_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = alteration_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = alteration_major_rituals_perk }
+                                                has_perk = alteration_medium_rituals_perk
+                                            }
+                                            add_perk = alteration_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = conjuration_major_rituals_perk
+                                            } 
+                                            add_perk = conjuration_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        10 = {
+            trigger = { NOT = { has_perk = conjuration_novice_perk } }
+            add_perk = conjuration_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = conjuration_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = conjuration_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = conjuration_minor_rituals_perk } }
+                            add_perk = conjuration_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = conjuration_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = conjuration_medium_rituals_perk }
+                                        has_perk = conjuration_minor_rituals_perk
+                                    }
+                                    add_perk = conjuration_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = conjuration_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = conjuration_major_rituals_perk }
+                                                has_perk = conjuration_medium_rituals_perk
+                                            }
+                                            add_perk = conjuration_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = conjuration_major_rituals_perk
+                                            } 
+                                            add_perk = conjuration_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        10 = {
+            trigger = { NOT = { has_perk = destruction_novice_perk } }
+            add_perk = destruction_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = destruction_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = destruction_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = destruction_minor_rituals_perk } }
+                            add_perk = destruction_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = destruction_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = destruction_medium_rituals_perk }
+                                        has_perk = destruction_minor_rituals_perk
+                                    }
+                                    add_perk = destruction_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = destruction_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = destruction_major_rituals_perk }
+                                                has_perk = destruction_medium_rituals_perk
+                                            }
+                                            add_perk = destruction_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = destruction_major_rituals_perk
+                                            } 
+                                            add_perk = destruction_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        10 = {
+            trigger = { NOT = { has_perk = illusion_novice_perk } }
+            add_perk = illusion_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = illusion_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = illusion_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = illusion_minor_rituals_perk } }
+                            add_perk = illusion_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = illusion_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = illusion_medium_rituals_perk }
+                                        has_perk = illusion_minor_rituals_perk
+                                    }
+                                    add_perk = illusion_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = illusion_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = illusion_major_rituals_perk }
+                                                has_perk = illusion_medium_rituals_perk
+                                            }
+                                            add_perk = illusion_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = illusion_major_rituals_perk
+                                            } 
+                                            add_perk = illusion_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        10 = {
+            trigger = { NOT = { has_perk = restoration_novice_perk } }
+            add_perk = restoration_novice_perk
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = restoration_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = restoration_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = restoration_minor_rituals_perk } }
+                            add_perk = restoration_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = restoration_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = restoration_medium_rituals_perk }
+                                        has_perk = restoration_minor_rituals_perk
+                                    }
+                                    add_perk = restoration_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = restoration_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = restoration_major_rituals_perk }
+                                                has_perk = restoration_medium_rituals_perk
+                                            }
+                                            add_perk = restoration_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = restoration_major_rituals_perk
+                                            } 
+                                            add_perk = restoration_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        50 = {
+            trigger = { 
+                is_necromancer = yes
+            }
+            if = { 
+                limit = { NOT = { has_perk = necromancy_novice_perk } }
+                add_perk = necromancy_novice_perk
+            }
+            random_list = {
+                25 = {}
+                75 = {
+                    trigger = {
+                        NOT = { has_perk = necromancy_apprentice_perk } 
+                        arcana > low_skill_rating
+                    } 
+                    add_perk = necromancy_apprentice_perk
+                    random_list = { 
+                        50 = {}
+                        50 = { 
+                            trigger = { NOT = { has_perk = necromancy_minor_rituals_perk } }
+                            add_perk = necromancy_minor_rituals_perk
+                        }
+                    }
+                    random_list = {
+                        50 = {}
+                        50 = {
+                            trigger = { arcana > mediocre_skill_rating } 
+                            add_perk = necromancy_journeyman_perk
+                            random_list = { 
+                                50 = {}
+                                50 = { 
+                                    trigger = { 
+                                        NOT = { has_perk = necromancy_medium_rituals_perk }
+                                        has_perk = necromancy_minor_rituals_perk
+                                    }
+                                    add_perk = necromancy_medium_rituals_perk
+                                }
+                            }
+                            random_list = {
+                                75 = {}
+                                25 = {
+                                    trigger = { arcana > decent_skill_rating } 
+                                    add_perk = necromancy_expert_perk
+                                    random_list = { 
+                                        50 = {}
+                                        50 = { 
+                                            trigger = { 
+                                                NOT = { has_perk = necromancy_major_rituals_perk }
+                                                has_perk = necromancy_medium_rituals_perk
+                                            }
+                                            add_perk = necromancy_major_rituals_perk
+                                        }
+                                    }
+                                    random_list = {
+                                        90 = {}
+                                        10 = {
+                                            trigger = {
+                                                arcana > high_skill_rating
+                                                has_perk = necromancy_major_rituals_perk
+                                            } 
+                                            add_perk = necromancy_master_perk 
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }  
+}
+
+ek_all_magic_perks_effect = { # For debugging and cheating, invoke via console - He9
+    add_perk = conjuration_novice_perk
+    add_perk = conjuration_apprentice_perk
+    add_perk = conjuration_journeyman_perk
+    add_perk = conjuration_expert_perk
+    add_perk = conjuration_master_perk
+    add_perk = restoration_novice_perk
+    add_perk = restoration_apprentice_perk
+    add_perk = restoration_journeyman_perk
+    add_perk = restoration_expert_perk
+    add_perk = restoration_master_perk
+    add_perk = illusion_novice_perk
+    add_perk = illusion_apprentice_perk
+    add_perk = illusion_journeyman_perk
+    add_perk = illusion_expert_perk
+    add_perk = illusion_master_perk
+    add_perk = alteration_novice_perk
+    add_perk = alteration_apprentice_perk
+    add_perk = alteration_journeyman_perk
+    add_perk = alteration_expert_perk
+    add_perk = alteration_master_perk
+    add_perk = destruction_novice_perk
+    add_perk = destruction_apprentice_perk
+    add_perk = destruction_journeyman_perk
+    add_perk = destruction_expert_perk
+    add_perk = destruction_master_perk
+    add_perk = necromancy_novice_perk
+    add_perk = necromancy_apprentice_perk
+    add_perk = necromancy_journeyman_perk
+    add_perk = necromancy_expert_perk
+    add_perk = necromancy_master_perk
+}
+
+remove_minor_ritual_modifier_effect = {
+    if = {
+        limit = { has_character_modifier = modifier_ritual_swift_swim }
+        remove_character_modifier = modifier_ritual_swift_swim
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_familiar_scamp }
+        remove_character_modifier = modifier_ritual_familiar_scamp
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_familiar_pocket_watcher }
+        remove_character_modifier = modifier_ritual_familiar_pocket_watcher
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_familiar_fiendroth }
+        remove_character_modifier = modifier_ritual_familiar_fiendroth
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_familiar_daedrat }
+        remove_character_modifier = modifier_ritual_familiar_daedrat
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_familiar_banekin }
+        remove_character_modifier = modifier_ritual_familiar_banekin
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_ignited_weapons }
+        remove_character_modifier = modifier_ritual_ignited_weapons
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_conceal }
+        remove_character_modifier = modifier_ritual_conceal
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_resist_disease }
+        remove_character_modifier = modifier_ritual_resist_disease
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_bone_mantle }
+        remove_character_modifier = modifier_ritual_bone_mantle
+    }
+}
+
+remove_medium_ritual_modifier_effect = {
+    if = {
+        limit = { has_character_modifier = modifier_ritual_feather }
+        remove_character_modifier = modifier_ritual_feather
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_bound_weapon }
+        remove_character_modifier = modifier_ritual_bound_weapon
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_empower_mages }
+        remove_character_modifier = modifier_ritual_empower_mages
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_rally }
+        remove_character_modifier = modifier_ritual_rally
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_fortify_diplomacy }
+        remove_character_modifier = modifier_ritual_fortify_diplomacy
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_fortify_martial }
+        remove_character_modifier = modifier_ritual_fortify_martial
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_fortify_stewardship }
+        remove_character_modifier = modifier_ritual_fortify_stewardship
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_fortify_intrigue }
+        remove_character_modifier = modifier_ritual_fortify_intrigue
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_fortify_learning }
+        remove_character_modifier = modifier_ritual_fortify_learning
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_unhallowed_earth }
+        remove_character_modifier = modifier_ritual_unhallowed_earth
+    }
+}
+
+remove_major_ritual_modifier_effect = {
+    if = {
+        limit = { has_character_modifier = modifier_ritual_oakflesh }
+        remove_character_modifier = modifier_ritual_oakflesh
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_bound_armor }
+        remove_character_modifier = modifier_ritual_bound_armor
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_elemental_cloaks }
+        remove_character_modifier = modifier_ritual_elemental_cloaks
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_invisibility }
+        remove_character_modifier = modifier_ritual_invisibility
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_mass_healing }
+        remove_character_modifier = modifier_ritual_mass_healing
+    }
+    if = {
+        limit = { has_character_modifier = modifier_ritual_undead_frenzy }
+        remove_character_modifier = modifier_ritual_undead_frenzy
+    }
+}
+
+gain_magic_perk_effect = {
+    random_list = {
+        1 = { 
+            trigger = { 
+                NOT = { has_perk = alteration_novice_perk }
+            }
+            add_perk = alteration_novice_perk
+        }
+        2 = { 
+            trigger = { 
+                NOT = { has_perk = alteration_apprentice_perk }
+                has_perk = alteration_novice_perk
+            }
+            add_perk = alteration_apprentice_perk
+        }
+        3 = { 
+            trigger = { 
+                NOT = { has_perk = alteration_journeyman_perk }
+                has_perk = alteration_apprentice_perk
+            }
+            add_perk = alteration_journeyman_perk
+        }
+        4 = { 
+            trigger = { 
+                NOT = { has_perk = alteration_expert_perk }
+                has_perk = alteration_journeyman_perk
+            }
+            add_perk = alteration_expert_perk
+        }
+        1 = { 
+            trigger = { 
+                NOT = { has_perk = conjuration_novice_perk }
+            }
+            add_perk = conjuration_novice_perk
+        }
+        2 = { 
+            trigger = { 
+                NOT = { has_perk = conjuration_apprentice_perk }
+                has_perk = conjuration_novice_perk
+            }
+            add_perk = conjuration_apprentice_perk
+        }
+        3 = { 
+            trigger = { 
+                NOT = { has_perk = conjuration_journeyman_perk }
+                has_perk = conjuration_apprentice_perk
+            }
+            add_perk = conjuration_journeyman_perk
+        }
+        4 = { 
+            trigger = { 
+                NOT = { has_perk = conjuration_expert_perk }
+                has_perk = conjuration_journeyman_perk
+            }
+            add_perk = conjuration_expert_perk
+        }
+        1 = { 
+            trigger = { 
+                NOT = { has_perk = destruction_novice_perk }
+            }
+            add_perk = destruction_novice_perk
+        }
+        2 = { 
+            trigger = { 
+                NOT = { has_perk = destruction_apprentice_perk }
+                has_perk = destruction_novice_perk
+            }
+            add_perk = destruction_apprentice_perk
+        }
+        3 = { 
+            trigger = { 
+                NOT = { has_perk = destruction_journeyman_perk }
+                has_perk = destruction_apprentice_perk
+            }
+            add_perk = destruction_journeyman_perk
+        }
+        4 = { 
+            trigger = { 
+                NOT = { has_perk = destruction_expert_perk }
+                has_perk = destruction_journeyman_perk
+            }
+            add_perk = destruction_expert_perk
+        }
+        1 = { 
+            trigger = { 
+                NOT = { has_perk = illusion_novice_perk }
+            }
+            add_perk = illusion_novice_perk
+        }
+        2 = { 
+            trigger = { 
+                NOT = { has_perk = illusion_apprentice_perk }
+                has_perk = illusion_novice_perk
+            }
+            add_perk = illusion_apprentice_perk
+        }
+        3 = { 
+            trigger = { 
+                NOT = { has_perk = illusion_journeyman_perk }
+                has_perk = illusion_apprentice_perk
+            }
+            add_perk = illusion_journeyman_perk
+        }
+        4 = { 
+            trigger = { 
+                NOT = { has_perk = illusion_expert_perk }
+                has_perk = illusion_journeyman_perk
+            }
+            add_perk = illusion_expert_perk
+        }
+        1 = { 
+            trigger = { 
+                NOT = { has_perk = restoration_novice_perk }
+            }
+            add_perk = restoration_novice_perk
+        }
+        2 = { 
+            trigger = { 
+                NOT = { has_perk = restoration_apprentice_perk }
+                has_perk = restoration_novice_perk
+            }
+            add_perk = restoration_apprentice_perk
+        }
+        3 = { 
+            trigger = { 
+                NOT = { has_perk = restoration_journeyman_perk }
+                has_perk = restoration_apprentice_perk
+            }
+            add_perk = restoration_journeyman_perk
+        }
+        4 = { 
+            trigger = { 
+                NOT = { has_perk = restoration_expert_perk }
+                has_perk = restoration_journeyman_perk
+            }
+            add_perk = restoration_expert_perk
+        }
+        2 = { 
+            trigger = { 
+                NOT = { has_perk = necromancy_apprentice_perk }
+                has_perk = necromancy_novice_perk
+            }
+            add_perk = necromancy_apprentice_perk
+        }
+        3 = { 
+            trigger = { 
+                NOT = { has_perk = necromancy_journeyman_perk }
+                has_perk = necromancy_apprentice_perk
+            }
+            add_perk = necromancy_journeyman_perk
+        }
+        4 = { 
+            trigger = { 
+                NOT = { has_perk = necromancy_expert_perk }
+                has_perk = necromancy_journeyman_perk
+            }
+            add_perk = necromancy_expert_perk
+        }
+    }
+}
