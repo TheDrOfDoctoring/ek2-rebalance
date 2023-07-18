@@ -62,6 +62,9 @@ ep1_culture_legacy_3 = { # Shared Ideas
 			text = culture_legacy_3_effect
 		}	
 	}
+	character_modifier = {
+		diplomacy = 2
+	}
 	effect = {
 		custom_description_no_bullet = { text = legacy_hooks_on_different_culture_vassals_effect }
 	}

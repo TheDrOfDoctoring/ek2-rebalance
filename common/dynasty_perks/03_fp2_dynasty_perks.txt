@@ -108,6 +108,10 @@ fp2_coterie_legacy_1 = { # Inner Circle
 	effect = {
 		custom_description_no_bullet = { text = fp2_coterie_legacy_1_effect }
 	}
+	character_modifier = {
+		monthly_prestige_gain_mult = 0.1
+	}
+	
 
 	ai_chance = {
 		value = 11
@@ -135,11 +139,6 @@ fp2_coterie_legacy_2 = { # House bonds
 	legacy = fp2_coterie_legacy_track
 
 	can_be_picked = { eligible_for_fp2_dynasty_legacies_trigger = yes }
-
-
-	effect = {
-		custom_description_no_bullet = { text = fp2_coterie_legacy_2_effect }
-	}
 	character_modifier = {
 		stress_gain_mult = -0.2
 	}

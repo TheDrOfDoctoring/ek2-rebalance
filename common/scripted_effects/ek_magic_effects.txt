@@ -3262,7 +3262,7 @@ spell_castee_effect = {
     if = {
         limit = {
             exists = var:spell_caster.dynasty   
-			var:spell_caster.dynasty = { has_dynasty_perk = erudition_legacy_2 }
+			var:spell_caster.dynasty = { has_dynasty_perk = magicka_legacy_5 }
 			house = prev.house
 		}
         school_spell_master_boosted_effect = { EFFECT = spell_castee }

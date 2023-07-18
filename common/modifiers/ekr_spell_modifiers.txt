@@ -11,3 +11,6 @@ modifier_spell_greater_resilience_grand = {
 	icon = magic_positive
 	health = 1
 }
+modifier_blessed_pregnancy = {
+	icon = magic_positive	
+}

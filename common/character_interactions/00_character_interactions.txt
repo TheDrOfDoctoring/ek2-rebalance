@@ -1775,6 +1775,66 @@ force_vote_in_succession_election_interaction = {
 	}
 }
 
+bless_pregnancy_interaction = {
+	category = interaction_category_friendly	
+	desc = bless_pregnancy_desc
+
+	is_shown = {
+		scope:actor = {
+			faith = {
+				OR = {
+					has_doctrine = tenet_moon_worship
+					has_doctrine = tenet_mystical_birthright
+				}
+			}
+
+		}
+		scope:recipient = {
+			is_spouse_of = scope:actor
+			has_trait = pregnant
+			faith = {
+				OR = {
+					has_doctrine = tenet_moon_worship
+					has_doctrine = tenet_mystical_birthright
+				}
+			}
+		}
+	}
+
+	is_valid_showing_failures_only = {
+		custom_description = {
+			text = missing_bless_piety
+			subject = scope:actor
+			object = scope:recipient
+
+			scope:actor = {
+				piety > 2000
+			}
+		}
+	}
+	on_accept = {
+	scope:recipient = {
+		hidden_effect = {	
+			send_interface_toast = {
+				title = bless_pregnancy_toast
+				left_icon = scope:actor
+				right_icon = scope:recipient
+
+				custom_tooltip = bless_pregnancy_toast_added
+			}
+			add_character_modifier = {
+				modifier = modifier_blessed_pregnancy
+				years = 1
+			}
+		}
+
+	}
+	scope:actor = {
+		add_piety = -2000
+	}
+}
+}
+
 set_primary_spouse_interaction = {
 	category = interaction_category_diplomacy
 	desc = set_primary_spouse_interaction_desc

@@ -754,7 +754,7 @@ doctrine_core_tenets = {
 		
 		traits = {
 			virtues = { necromancer = 1 }
-			virtues = { lich_character = 5 }
+			virtues = { lich_character = 3 }
 		}
 	}
 	

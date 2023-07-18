@@ -1,0 +1,3 @@
+missing_bless_piety = {
+	first_not = I_DONT_HAVE_PIETY
+}

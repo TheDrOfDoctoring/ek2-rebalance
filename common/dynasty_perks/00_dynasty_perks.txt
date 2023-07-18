@@ -26,6 +26,7 @@ blood_legacy_2 = { # Convergent Blood
 	character_modifier = {
 		genetic_trait_strengthen_chance = 0.3
 	}
+
 }
 
 blood_legacy_3 = { # Resilient Bloodline
@@ -151,7 +152,7 @@ law_legacy_1 = { # Mostly Fair
 	legacy = law_legacy_track
 
 	character_modifier = {
-		county_opinion_add = 5
+		county_opinion_add = 10
 	}
 	
 	effect = {
@@ -185,9 +186,8 @@ law_legacy_3 = { # Power and Prosperity
 	legacy = law_legacy_track
 
 	character_modifier = {
-		monthly_stewardship_lifestyle_xp_gain_mult = 0.1
-		build_gold_cost = -0.05
-		holding_build_gold_cost = -0.05
+		build_gold_cost = -0.15
+		holding_build_gold_cost = -0.15	
 	}
 }
 
@@ -196,7 +196,7 @@ law_legacy_4 = { # Delegated Authority
 
 	character_modifier = {
 		name = law_legacy_4_name
-		powerful_vassal_opinion = 5
+		powerful_vassal_opinion = 10
 		happy_powerful_vassal_tax_contribution_mult = 0.1
 		happy_powerful_vassal_levy_contribution_mult = 0.1
 	}
@@ -363,7 +363,7 @@ erudition_legacy_4 = { # True Believers
 		tolerance_advantage_mod = 5
 	}
     character_modifier = {
-		learning_per_piety_level = 2
+		learning_per_piety_level = 1
 	}
 }
 
@@ -415,7 +415,6 @@ glory_legacy_2 = { # Renowned Name
 
 	character_modifier = {
 		name = glory_legacy_2_name
-		monthly_prestige_gain_mult = 0.1
 		mercenary_hire_cost_mult = -0.1
 		knight_limit = 1
 		monthly_court_grandeur_change_mult = 1
@@ -465,6 +464,7 @@ kin_legacy_1 = { # Bounteous Loins
 	character_modifier = {
 		fertility = 0.1
 		attraction_opinion = 5
+		stewardship = 2
 	}
 	
 	ai_chance = {
