@@ -141,6 +141,7 @@ fp2_coterie_legacy_2 = { # House bonds
 	can_be_picked = { eligible_for_fp2_dynasty_legacies_trigger = yes }
 	character_modifier = {
 		stress_gain_mult = -0.2
+		monthly_diplomacy_lifestyle_xp_gain_mult = 0.1
 	}
 
 	ai_chance = {

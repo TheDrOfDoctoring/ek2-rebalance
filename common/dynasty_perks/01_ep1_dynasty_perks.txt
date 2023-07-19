@@ -87,4 +87,7 @@ ep1_culture_legacy_5 = { # Side-by-Side
 	effect = {
 		custom_description_no_bullet = { text = legacy_promote_culture_decision_effect }
 	}
+	character_modifier = {
+		monthly_stewardship_lifestyle_xp_gain_mult = 0.25
+	}
 }
